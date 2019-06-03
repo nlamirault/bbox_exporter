@@ -15,6 +15,7 @@
 package exporter
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -120,16 +121,22 @@ func describeWanMetrics(ch chan<- *prometheus.Desc) {
 	ch <- rxBandwidthMaxWan
 }
 
-func storeWanMetrics(ch chan<- prometheus.Metric, metrics bbox.WanIPStatistics) {
+func storeWanMetrics(ch chan<- prometheus.Metric, metrics bbox.WanMetrics) {
 	log.Info("Store WAN metrics")
-	storeMetric(ch, metrics.WAN.IP.Stats.Tx.Bytes, txBytesWan)
-	storeMetric(ch, metrics.WAN.IP.Stats.Tx.Packets, txPacketsWan)
-	storeMetric(ch, metrics.WAN.IP.Stats.Tx.Packetserrors, txPacketsErrorsWan)
-	storeMetric(ch, metrics.WAN.IP.Stats.Tx.Packetsdiscards, txPacketsDiscardsWan)
-	storeMetric(ch, metrics.WAN.IP.Stats.Rx.Bytes, rxBytesWan)
-	storeMetric(ch, metrics.WAN.IP.Stats.Rx.Packets, rxPacketsWan)
-	storeMetric(ch, metrics.WAN.IP.Stats.Rx.Packetserrors, rxPacketsErrorsWan)
-	storeMetric(ch, metrics.WAN.IP.Stats.Rx.Packetsdiscards, rxPacketsDiscardsWan)
+	// storeMetric(ch, metrics.IPStatistics[0].WAN.IP.Stats.Tx.Bytes, txBytesWan)
+	if val, err := strconv.ParseFloat(metrics.IPStatistics[0].WAN.IP.Stats.Tx.Bytes, 64); err == nil {
+		storeMetric(ch, val, txBytesWan)
+	}
+	storeMetric(ch, metrics.IPStatistics[0].WAN.IP.Stats.Tx.Packets, txPacketsWan)
+	storeMetric(ch, metrics.IPStatistics[0].WAN.IP.Stats.Tx.Packetserrors, txPacketsErrorsWan)
+	storeMetric(ch, metrics.IPStatistics[0].WAN.IP.Stats.Tx.Packetsdiscards, txPacketsDiscardsWan)
+	// storeMetric(ch, metrics.IPStatistics[0].WAN.IP.Stats.Rx.Bytes, rxBytesWan)
+	if val, err := strconv.ParseFloat(metrics.IPStatistics[0].WAN.IP.Stats.Rx.Bytes, 64); err == nil {
+		storeMetric(ch, val, rxBytesWan)
+	}
+	storeMetric(ch, metrics.IPStatistics[0].WAN.IP.Stats.Rx.Packets, rxPacketsWan)
+	storeMetric(ch, metrics.IPStatistics[0].WAN.IP.Stats.Rx.Packetserrors, rxPacketsErrorsWan)
+	storeMetric(ch, metrics.IPStatistics[0].WAN.IP.Stats.Rx.Packetsdiscards, rxPacketsDiscardsWan)
 }
 
 func storeWanFtthMetric(ch chan<- prometheus.Metric, metric string) {

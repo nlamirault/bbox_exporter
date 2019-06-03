@@ -44,10 +44,12 @@ var (
 
 // Metrics define Bbox Prometheus metrics
 type Metrics struct {
-	Device    DeviceMetrics `json:"device"`
-	Wan       WanMetrics    `json:"wan"`
-	Lan       LanMetrics    `json:"lan"`
-	FtthState string        `json:"ftth_state"`
+	Device    DeviceMetrics   `json:"device"`
+	Wan       WanMetrics      `json:"wan"`
+	Lan       LanMetrics      `json:"lan"`
+	DNS       DNSMetrics      `json:"dns"`
+	Services  ServicesMetrics `json:"services"`
+	FtthState string          `json:"ftth_state"`
 }
 
 type Client struct {
@@ -81,22 +83,36 @@ func (client *Client) GetMetrics() (*Metrics, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Infof("Device metrics: %v", deviceMetrics)
+	log.Infof("Device metrics: %#v", deviceMetrics)
 	metrics.Device = *deviceMetrics
 
 	wanMetrics, err := client.getWanMetrics()
 	if err != nil {
 		return nil, err
 	}
-	log.Infof("WAN metrics: %v", wanMetrics)
+	log.Infof("WAN metrics: %#v", wanMetrics)
 	metrics.Wan = *wanMetrics
 
 	lanMetrics, err := client.getLanMetrics()
 	if err != nil {
 		return nil, err
 	}
-	log.Infof("LAN metrics: %v", lanMetrics)
-	metrics.Wan = *wanMetrics
+	log.Infof("LAN metrics: %#v", lanMetrics)
+	metrics.Lan = *lanMetrics
+
+	dnsMetrics, err := client.getDNSMetrics()
+	if err != nil {
+		return nil, err
+	}
+	log.Infof("DNS metrics: %#v", dnsMetrics)
+	metrics.DNS = *dnsMetrics
+
+	servicesMetrics, err := client.getServicesMetrics()
+	if err != nil {
+		return nil, err
+	}
+	log.Infof("Services metrics: %#v", servicesMetrics)
+	metrics.Services = *servicesMetrics
 
 	return &metrics, nil
 }

@@ -45,6 +45,7 @@ var (
 func init() {
         // parse flags
         flag.BoolVar(&vrs, "version", false, "print version and exit")
+        flag.BoolVar(&debug, "debug", false, "enable debug mode")
         flag.StringVar(&listenAddress, "web.listen-address", ":9311", "Address to listen on for web interface and telemetry.")
         flag.StringVar(&metricsPath, "web.telemetry-path", "/metrics", "Path under which to expose metrics.")
         flag.StringVar(&endpoint, "bbox", "https://mabbox.bytel.fr", "Endpoint of Bbox")

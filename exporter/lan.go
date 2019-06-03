@@ -15,6 +15,8 @@
 package exporter
 
 import (
+	"strconv"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
 
@@ -76,14 +78,20 @@ func describeLanMetrics(ch chan<- *prometheus.Desc) {
 	ch <- rxPacketsDiscardsLan
 }
 
-func storeLanMetrics(ch chan<- prometheus.Metric, metrics bbox.LanStatistics) {
+func storeLanMetrics(ch chan<- prometheus.Metric, metrics bbox.LanMetrics) {
 	log.Info("Store LAN metrics")
-	storeMetric(ch, metrics.Lan.Stats.Tx.Bytes, txBytesLan)
-	storeMetric(ch, metrics.Lan.Stats.Tx.Packets, txPacketsLan)
-	storeMetric(ch, metrics.Lan.Stats.Tx.Packetserrors, txPacketsErrorsLan)
-	storeMetric(ch, metrics.Lan.Stats.Tx.Packetsdiscards, txPacketsDiscardsLan)
-	storeMetric(ch, metrics.Lan.Stats.Rx.Bytes, rxBytesLan)
-	storeMetric(ch, metrics.Lan.Stats.Rx.Packets, rxPacketsLan)
-	storeMetric(ch, metrics.Lan.Stats.Rx.Packetserrors, rxPacketsErrorsLan)
-	storeMetric(ch, metrics.Lan.Stats.Rx.Packetsdiscards, rxPacketsDiscardsLan)
+	// storeMetric(ch, metrics.Statistics[0].Lan.Stats.Tx.Bytes, txBytesLan)
+	if val, err := strconv.ParseFloat(metrics.Statistics[0].Lan.Stats.Tx.Bytes, 64); err == nil {
+		storeMetric(ch, val, txBytesLan)
+	}
+	storeMetric(ch, metrics.Statistics[0].Lan.Stats.Tx.Packets, txPacketsLan)
+	storeMetric(ch, metrics.Statistics[0].Lan.Stats.Tx.Packetserrors, txPacketsErrorsLan)
+	storeMetric(ch, metrics.Statistics[0].Lan.Stats.Tx.Packetsdiscards, txPacketsDiscardsLan)
+	// storeMetric(ch, metrics.Statistics[0].Lan.Stats.Rx.Bytes, rxBytesLan)
+	if val, err := strconv.ParseFloat(metrics.Statistics[0].Lan.Stats.Rx.Bytes, 64); err == nil {
+		storeMetric(ch, val, rxBytesLan)
+	}
+	storeMetric(ch, metrics.Statistics[0].Lan.Stats.Rx.Packets, rxPacketsLan)
+	storeMetric(ch, metrics.Statistics[0].Lan.Stats.Rx.Packetserrors, rxPacketsErrorsLan)
+	storeMetric(ch, metrics.Statistics[0].Lan.Stats.Rx.Packetsdiscards, rxPacketsDiscardsLan)
 }

@@ -56,6 +56,9 @@ func NewExporter(endpoint string) (*Exporter, error) {
 func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	ch <- up
 	describeWanMetrics(ch)
+	describeLanMetrics(ch)
+	describeDeviceMetrics(ch)
+	describeDNSMetrics(ch)
 }
 
 // Collect the stats from channel and delivers them as Prometheus metrics.
@@ -71,8 +74,11 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		return
 	}
 	log.Infof("Bbox metrics retrieved")
-	storeWanMetrics(ch, resp.Wan.IPStatistics[0])
+	storeWanMetrics(ch, resp.Wan)
 	storeWanFtthMetric(ch, resp.FtthState)
+	storeLanMetrics(ch, resp.Lan)
+	storeDeviceMetrics(ch, resp.Device)
+	storeDNSMetrics(ch, resp.DNS)
 	ch <- prometheus.MustNewConstMetric(
 		up, prometheus.GaugeValue, 1,
 	)

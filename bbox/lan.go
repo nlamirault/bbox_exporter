@@ -39,7 +39,7 @@ type LanHost struct {
 	Link       string        `json:"link"`
 	Devicetype string        `json:"devicetype"`
 	Firstseen  string        `json:"firstseen"`
-	Lastseen   int           `json:"lastseen"`
+	Lastseen   interface{}   `json:"lastseen"`
 	IP6Address []interface{} `json:"ip6address"`
 	Ethernet   struct {
 		Physicalport int    `json:"physicalport"`
@@ -52,15 +52,15 @@ type LanHost struct {
 		Serial  string `json:"serial"`
 	} `json:"stb,omitempty"`
 	Wireless struct {
-		Band       string `json:"band"`
-		Rssi0      int    `json:"rssi0"`
-		Rssi1      int    `json:"rssi1"`
-		Rssi2      int    `json:"rssi2"`
-		Mcs        int    `json:"mcs"`
-		Rate       string `json:"rate"`
-		Idle       int    `json:"idle"`
-		Wexindex   int    `json:"wexindex"`
-		Starealmac string `json:"starealmac"`
+		Band       string      `json:"band"`
+		Rssi0      interface{} `json:"rssi0"` // String or int ? "rssi0":"-76","rssi1":0,"rssi2":0
+		Rssi1      interface{} `json:"rssi1"`
+		Rssi2      interface{} `json:"rssi2"`
+		Mcs        interface{} `json:"mcs"` // Same string or int ??
+		Rate       interface{} `json:"rate"`
+		Idle       interface{} `json:"idle"`
+		Wexindex   interface{} `json:"wexindex"`
+		Starealmac interface{} `json:"starealmac"`
 	} `json:"wireless"`
 	Plc struct {
 		Rxphyrate        string `json:"rxphyrate"`
@@ -91,13 +91,13 @@ type LanStatistics struct {
 		Stats struct {
 			Rx struct {
 				Packets         float64 `json:"packets"`
-				Bytes           float64 `json:"bytes"`
+				Bytes           string  `json:"bytes"` // See: https://github.com/nlamirault/bbox_exporter/issues/1
 				Packetserrors   float64 `json:"packetserrors"`
 				Packetsdiscards float64 `json:"packetsdiscards"`
 			} `json:"rx"`
 			Tx struct {
 				Packets         float64 `json:"packets"`
-				Bytes           float64 `json:"bytes"`
+				Bytes           string  `json:"bytes"` // See: https://github.com/nlamirault/bbox_exporter/issues/1
 				Packetserrors   float64 `json:"packetserrors"`
 				Packetsdiscards float64 `json:"packetsdiscards"`
 			} `json:"tx"`

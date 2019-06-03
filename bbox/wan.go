@@ -30,7 +30,7 @@ type WanIPStatistics struct {
 			Stats struct {
 				Rx struct {
 					Packets         float64 `json:"packets"`
-					Bytes           float64 `json:"bytes"`
+					Bytes           string  `json:"bytes"` // See: https://github.com/nlamirault/bbox_exporter/issues/1
 					Packetserrors   float64 `json:"packetserrors"`
 					Packetsdiscards float64 `json:"packetsdiscards"`
 					Occupation      float64 `json:"occupation"`
@@ -39,7 +39,7 @@ type WanIPStatistics struct {
 				} `json:"rx"`
 				Tx struct {
 					Packets         float64 `json:"packets"`
-					Bytes           float64 `json:"bytes"`
+					Bytes           string  `json:"bytes"` // See: https://github.com/nlamirault/bbox_exporter/issues/1
 					Packetserrors   float64 `json:"packetserrors"`
 					Packetsdiscards float64 `json:"packetsdiscards"`
 					Occupation      float64 `json:"occupation"`
