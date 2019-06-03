@@ -32,6 +32,7 @@ GO = go
 GOX = gox -osarch="linux/amd64" -osarch="linux/arm64" -osarch="linux/arm" -osarch="darwin/amd64" -osarch="windows/amd64"
 GOX_ARGS = "-output={{.Dir}}-$(VERSION)_{{.OS}}_{{.Arch}}"
 
+EXE = $(shell ls bbox_exporter-*)
 BINTRAY_URI = https://api.bintray.com
 BINTRAY_USERNAME = nlamirault
 BINTRAY_REPOSITORY= oss
