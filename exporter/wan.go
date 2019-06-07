@@ -15,7 +15,6 @@
 package exporter
 
 import (
-	"strconv"
 	"strings"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -101,6 +100,36 @@ var (
 		"RX bandwith available",
 		nil, nil,
 	)
+	diagnosticsMinWan = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "wan_diagnostics_min"),
+		"Minimum response Time",
+		[]string{"mode"}, nil,
+	)
+	diagnosticsMaxWan = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "wan_diagnostics_max"),
+		"Maximum response Time",
+		[]string{"mode"}, nil,
+	)
+	diagnosticsAvgWan = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "wan_diagnostics_avg"),
+		"Average response Time",
+		[]string{"mode"}, nil,
+	)
+	diagnosticsNumberOfSuccess = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "wan_diagnostics_success"),
+		"Number of sucess",
+		[]string{"mode"}, nil,
+	)
+	diagnosticsNumberOfError = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "wan_diagnostics_error"),
+		"Number of error",
+		[]string{"mode"}, nil,
+	)
+	diagnosticsNumberOfTries = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "wan_diagnostics_tries"),
+		"Number of tries",
+		[]string{"mode"}, nil,
+	)
 )
 
 func describeWanMetrics(ch chan<- *prometheus.Desc) {
@@ -119,24 +148,56 @@ func describeWanMetrics(ch chan<- *prometheus.Desc) {
 	ch <- rxLineOccupationWan
 	ch <- rxBandwidthWan
 	ch <- rxBandwidthMaxWan
+	ch <- diagnosticsMinWan
+	ch <- diagnosticsMaxWan
+	ch <- diagnosticsAvgWan
+	ch <- diagnosticsNumberOfSuccess
+	ch <- diagnosticsNumberOfError
+	ch <- diagnosticsNumberOfTries
 }
 
 func storeWanMetrics(ch chan<- prometheus.Metric, metrics bbox.WanMetrics) {
 	log.Info("Store WAN metrics")
-	// storeMetric(ch, metrics.IPStatistics[0].WAN.IP.Stats.Tx.Bytes, txBytesWan)
-	if val, err := strconv.ParseFloat(metrics.IPStatistics[0].WAN.IP.Stats.Tx.Bytes, 64); err == nil {
-		storeMetric(ch, val, txBytesWan)
+	storeMetric(ch, float64(metrics.IPStatistics[0].WAN.IP.Stats.Tx.Bytes), txBytesWan)
+	storeMetric(ch, float64(metrics.IPStatistics[0].WAN.IP.Stats.Tx.Packets), txPacketsWan)
+	storeMetric(ch, float64(metrics.IPStatistics[0].WAN.IP.Stats.Tx.Packetserrors), txPacketsErrorsWan)
+	storeMetric(ch, float64(metrics.IPStatistics[0].WAN.IP.Stats.Tx.Packetsdiscards), txPacketsDiscardsWan)
+	storeMetric(ch, float64(metrics.IPStatistics[0].WAN.IP.Stats.Tx.Occupation), txLineOccupationWan)
+	storeMetric(ch, float64(metrics.IPStatistics[0].WAN.IP.Stats.Tx.Bandwidth), txBandwidthWan)
+	storeMetric(ch, float64(metrics.IPStatistics[0].WAN.IP.Stats.Tx.MaxBandwidth), txBandwidthMaxWan)
+	storeMetric(ch, float64(metrics.IPStatistics[0].WAN.IP.Stats.Rx.Bytes), rxBytesWan)
+	storeMetric(ch, float64(metrics.IPStatistics[0].WAN.IP.Stats.Rx.Packets), rxPacketsWan)
+	storeMetric(ch, float64(metrics.IPStatistics[0].WAN.IP.Stats.Rx.Packetserrors), rxPacketsErrorsWan)
+	storeMetric(ch, float64(metrics.IPStatistics[0].WAN.IP.Stats.Rx.Packetsdiscards), rxPacketsDiscardsWan)
+	storeMetric(ch, float64(metrics.IPStatistics[0].WAN.IP.Stats.Rx.Occupation), rxLineOccupationWan)
+	storeMetric(ch, float64(metrics.IPStatistics[0].WAN.IP.Stats.Rx.Bandwidth), rxBandwidthWan)
+	storeMetric(ch, float64(metrics.IPStatistics[0].WAN.IP.Stats.Rx.MaxBandwidth), rxBandwidthMaxWan)
+
+	log.Infof("%+v", metrics.DiagnosticsStatistics[0].Diags.Ping[0])
+	for _, val := range metrics.DiagnosticsStatistics[0].Diags.DNS {
+		if val.Tries > 0 {
+			storeMetric(ch, float64(val.Min), diagnosticsMinWan, "dns")
+			storeMetric(ch, float64(val.Max), diagnosticsMaxWan, "dns")
+			storeMetric(ch, float64(val.Average), diagnosticsAvgWan, "dns")
+			break
+		}
 	}
-	storeMetric(ch, metrics.IPStatistics[0].WAN.IP.Stats.Tx.Packets, txPacketsWan)
-	storeMetric(ch, metrics.IPStatistics[0].WAN.IP.Stats.Tx.Packetserrors, txPacketsErrorsWan)
-	storeMetric(ch, metrics.IPStatistics[0].WAN.IP.Stats.Tx.Packetsdiscards, txPacketsDiscardsWan)
-	// storeMetric(ch, metrics.IPStatistics[0].WAN.IP.Stats.Rx.Bytes, rxBytesWan)
-	if val, err := strconv.ParseFloat(metrics.IPStatistics[0].WAN.IP.Stats.Rx.Bytes, 64); err == nil {
-		storeMetric(ch, val, rxBytesWan)
+	for _, val := range metrics.DiagnosticsStatistics[0].Diags.Ping {
+		if val.Tries > 0 {
+			storeMetric(ch, float64(val.Min), diagnosticsMinWan, "ping")
+			storeMetric(ch, float64(val.Max), diagnosticsMaxWan, "ping")
+			storeMetric(ch, float64(val.Average), diagnosticsAvgWan, "ping")
+			break
+		}
 	}
-	storeMetric(ch, metrics.IPStatistics[0].WAN.IP.Stats.Rx.Packets, rxPacketsWan)
-	storeMetric(ch, metrics.IPStatistics[0].WAN.IP.Stats.Rx.Packetserrors, rxPacketsErrorsWan)
-	storeMetric(ch, metrics.IPStatistics[0].WAN.IP.Stats.Rx.Packetsdiscards, rxPacketsDiscardsWan)
+	for _, val := range metrics.DiagnosticsStatistics[0].Diags.HTTP {
+		if val.Tries > 0 {
+			storeMetric(ch, float64(val.Min), diagnosticsMinWan, "http")
+			storeMetric(ch, float64(val.Max), diagnosticsMaxWan, "http")
+			storeMetric(ch, float64(val.Average), diagnosticsAvgWan, "http")
+			break
+		}
+	}
 }
 
 func storeWanFtthMetric(ch chan<- prometheus.Metric, metric string) {

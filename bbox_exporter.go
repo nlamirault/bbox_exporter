@@ -37,9 +37,7 @@ var (
         listenAddress string
         metricsPath   string
         endpoint      string
-        username      string
         password      string
-        ids           string
 )
 
 func init() {
@@ -49,6 +47,7 @@ func init() {
         flag.StringVar(&listenAddress, "web.listen-address", ":9311", "Address to listen on for web interface and telemetry.")
         flag.StringVar(&metricsPath, "web.telemetry-path", "/metrics", "Path under which to expose metrics.")
         flag.StringVar(&endpoint, "bbox", "https://mabbox.bytel.fr", "Endpoint of Bbox")
+        flag.StringVar(&password, "password", "", "The admin password")
         flag.Usage = func() {
                 fmt.Fprint(os.Stderr, fmt.Sprintf(banner, version.Version))
                 flag.PrintDefaults()
@@ -63,10 +62,13 @@ func init() {
         if len(endpoint) == 0 {
                 usageAndExit("bbox endpoint cannot be empty.", 1)
         }
+        if len(password) == 0 {
+                usageAndExit("bbox password cannot be empty.", 1)
+        }
 }
 
 func main() {
-        exporter, err := exporter.NewExporter(endpoint)
+        exporter, err := exporter.NewExporter(endpoint, password)
         if err != nil {
                 log.Errorf("Can't create exporter : %s", err)
                 os.Exit(1)

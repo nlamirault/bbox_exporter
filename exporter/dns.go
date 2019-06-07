@@ -24,7 +24,7 @@ import (
 var (
 	dnsNumberOfQueries = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "", "dns_number_of_queries"),
-		"",
+		"Number of queries",
 		nil, nil,
 	)
 	dnsMin = prometheus.NewDesc(

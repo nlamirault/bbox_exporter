@@ -34,6 +34,13 @@ type DeviceInformations struct {
 			Current float64 `json:"current"`
 			Status  string  `json:"status"`
 		} `json:"temperature"`
+		Using struct {
+			IPv4 int `json:"ipv4"`
+			IPv6 int `json:"ipv6"`
+			FTTH int `json:"ftth"`
+			ADSL int `json:"adsl"`
+			VDSL int `json:"vdsl"`
+		} `json:"using"`
 	} `json:"device"`
 }
 
@@ -97,7 +104,7 @@ func (client *Client) getDeviceMetrics() (*DeviceMetrics, error) {
 func (client *Client) getDeviceInformations() ([]DeviceInformations, error) {
 	log.Info("Retrieve device informations")
 	var informations []DeviceInformations
-	if err := client.apiRequest("%s/device", &informations); err != nil {
+	if err := client.apiRequest("/device", &informations); err != nil {
 		return nil, err
 	}
 	return informations, nil
@@ -108,7 +115,7 @@ func (client *Client) getDeviceInformations() ([]DeviceInformations, error) {
 func (client *Client) getDeviceCPU() ([]DeviceCPU, error) {
 	log.Info("Retrieve device CPU")
 	var cpu []DeviceCPU
-	if err := client.apiRequest("%s/device/cpu", &cpu); err != nil {
+	if err := client.apiRequest("/device/cpu", &cpu); err != nil {
 		return nil, err
 	}
 	return cpu, nil
@@ -119,7 +126,7 @@ func (client *Client) getDeviceCPU() ([]DeviceCPU, error) {
 func (client *Client) getDeviceMemory() ([]DeviceMemory, error) {
 	log.Info("Retrieve device memory")
 	var memory []DeviceMemory
-	if err := client.apiRequest("%s/device/mem", &memory); err != nil {
+	if err := client.apiRequest("/device/mem", &memory); err != nil {
 		return nil, err
 	}
 	return memory, nil

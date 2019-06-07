@@ -15,7 +15,6 @@
 package bbox
 
 import (
-	// "bytes"
 	// "encoding/json"
 	"bytes"
 	"encoding/json"
@@ -25,6 +24,7 @@ import (
 	// "io/ioutil"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/prometheus/common/log"
 
@@ -39,7 +39,8 @@ const (
 )
 
 var (
-	userAgent = fmt.Sprintf("bbox-exporter/%s", version.Version)
+	application = "bbox-exporter"
+	userAgent   = fmt.Sprintf("%s/%s", application, version.Version)
 )
 
 // Metrics define Bbox Prometheus metrics
@@ -50,28 +51,34 @@ type Metrics struct {
 	DNS       DNSMetrics      `json:"dns"`
 	Services  ServicesMetrics `json:"services"`
 	FtthState string          `json:"ftth_state"`
+	Wireless  WirelessMetrics `json:"wireless"`
+	IPTV      IPTVMetrics     `json:"iptv"`
 }
 
 type Client struct {
-	URL string
+	url      string
+	cookies  []*http.Cookie
+	password string
 }
 
-func NewClient(endpoint string) (*Client, error) {
+func NewClient(endpoint string, password string) (*Client, error) {
 	url, err := url.Parse(endpoint)
 	if err != nil || url.Scheme != "https" {
 		return nil, fmt.Errorf("Invalid bbox address: %s", err)
 	}
 	log.Infof("bbox client creation")
 	return &Client{
-		URL: fmt.Sprintf("%s%s", url.String(), apiVersion),
+		url:      fmt.Sprintf("%s%s", url.String(), apiVersion),
+		password: password,
 	}, nil
 }
 
-func (client *Client) setupHeaders(request *http.Request) {
-	request.Header.Add("Content-Type", mediaType)
-	request.Header.Add("Accept", acceptHeader)
-	request.Header.Add("User-Agent", userAgent)
-}
+// func (client *Client) setupHeaders(request *http.Request) {
+// 	request.Header.Add("Content-Type", mediaType)
+// 	request.Header.Add("X-Requested-By", application)
+// 	request.Header.Add("Accept", acceptHeader)
+// 	request.Header.Add("User-Agent", userAgent)
+// }
 
 // GetMetrics retrieve available metrics for the API Router
 func (client *Client) GetMetrics() (*Metrics, error) {
@@ -81,48 +88,96 @@ func (client *Client) GetMetrics() (*Metrics, error) {
 
 	deviceMetrics, err := client.getDeviceMetrics()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Device metrics : %s", err)
 	}
 	log.Infof("Device metrics: %#v", deviceMetrics)
 	metrics.Device = *deviceMetrics
 
+	servicesMetrics, err := client.getServicesMetrics()
+	if err != nil {
+		return nil, fmt.Errorf("Services metrics: %s", err)
+	}
+	log.Infof("Services metrics: %#v", servicesMetrics)
+	metrics.Services = *servicesMetrics
+
 	wanMetrics, err := client.getWanMetrics()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("WAN metrics: %s", err)
 	}
 	log.Infof("WAN metrics: %#v", wanMetrics)
 	metrics.Wan = *wanMetrics
 
 	lanMetrics, err := client.getLanMetrics()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("LAN metrics: %s", err)
 	}
 	log.Infof("LAN metrics: %#v", lanMetrics)
 	metrics.Lan = *lanMetrics
 
+	wirelessMetrics, err := client.getWirelessMetrics()
+	if err != nil {
+		return nil, fmt.Errorf("Wireless metrics: %s", err)
+	}
+	log.Infof("WIFI metrics: %#v", wirelessMetrics)
+	metrics.Wireless = *wirelessMetrics
+
 	dnsMetrics, err := client.getDNSMetrics()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("DNS metrics: %s", err)
 	}
 	log.Infof("DNS metrics: %#v", dnsMetrics)
 	metrics.DNS = *dnsMetrics
 
-	servicesMetrics, err := client.getServicesMetrics()
+	iptv, err := client.getIPTVMetrics()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("IPTV metrics: %s", err)
 	}
-	log.Infof("Services metrics: %#v", servicesMetrics)
-	metrics.Services = *servicesMetrics
+	log.Infof("IPTV metrics : %#v", iptv)
+	metrics.IPTV = *iptv
 
 	return &metrics, nil
 }
 
-func (client *Client) apiRequest(request string, v interface{}) error {
-	url := fmt.Sprintf(request, client.URL)
-	log.Infof("Bbox API request : %s", url)
-	resp, err := http.Get(url)
+func (client *Client) Authenticate() error {
+	log.Infof("Bbox API perform authentication")
+	resp, err := http.Post(
+		fmt.Sprintf("%s/login", client.url),
+		"application/x-www-form-urlencoded",
+		bytes.NewBuffer([]byte(fmt.Sprintf("password=%s", client.password))))
 	if err != nil {
 		return err
+	}
+	log.Infof("Login response: %v", resp)
+	cookies := resp.Cookies()
+	if len(resp.Cookies()) == 0 {
+		return fmt.Errorf("Can't retreive Cookie from API response")
+	}
+	// log.Infof("Cookies : ================== %s", cookies)
+	client.cookies = cookies
+	return nil
+}
+
+func (client *Client) apiRequest(request string, v interface{}) error {
+	url := fmt.Sprintf("%s%s", client.url, request)
+	log.Infof("Bbox API request : %s", url)
+
+	req, err := http.NewRequest("GET", url, nil)
+	// resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Cache-Control", "no-cache")
+	if client.cookies != nil {
+		for _, cookie := range client.cookies {
+			req.AddCookie(cookie)
+		}
+	}
+
+	httpClient := &http.Client{Timeout: time.Second * 10}
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return nil
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)

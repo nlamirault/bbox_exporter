@@ -19,9 +19,10 @@ import (
 )
 
 type WanMetrics struct {
-	IPInformations []WanIPInformations `json:"ip_informations"`
-	IPStatistics   []WanIPStatistics   `json:"ip_statistics"`
-	FtthStatistics *FtthStatistics     `json:"ftth_statistics"`
+	IPInformations        []WanIPInformations  `json:"ip_informations"`
+	IPStatistics          []WanIPStatistics    `json:"ip_statistics"`
+	FtthStatistics        *FtthStatistics      `json:"ftth_statistics"`
+	DiagnosticsStatistics []WanDiagsStatistics `json:"diagnostics"`
 }
 
 type WanIPStatistics struct {
@@ -29,22 +30,22 @@ type WanIPStatistics struct {
 		IP struct {
 			Stats struct {
 				Rx struct {
-					Packets         float64 `json:"packets"`
-					Bytes           string  `json:"bytes"` // See: https://github.com/nlamirault/bbox_exporter/issues/1
-					Packetserrors   float64 `json:"packetserrors"`
-					Packetsdiscards float64 `json:"packetsdiscards"`
-					Occupation      float64 `json:"occupation"`
-					Bandwidth       float64 `json:"bandwidth"`
-					MaxBandwidth    float64 `json:"maxBandwidth"`
+					Packets         flexInt `json:"packets"`
+					Bytes           flexInt `json:"bytes"` // See: https://github.com/nlamirault/bbox_exporter/issues/1
+					Packetserrors   flexInt `json:"packetserrors"`
+					Packetsdiscards flexInt `json:"packetsdiscards"`
+					Occupation      flexInt `json:"occupation"`
+					Bandwidth       flexInt `json:"bandwidth"`
+					MaxBandwidth    flexInt `json:"maxBandwidth"`
 				} `json:"rx"`
 				Tx struct {
-					Packets         float64 `json:"packets"`
-					Bytes           string  `json:"bytes"` // See: https://github.com/nlamirault/bbox_exporter/issues/1
-					Packetserrors   float64 `json:"packetserrors"`
-					Packetsdiscards float64 `json:"packetsdiscards"`
-					Occupation      float64 `json:"occupation"`
-					Bandwidth       float64 `json:"bandwidth"`
-					MaxBandwidth    float64 `json:"maxBandwidth"`
+					Packets         flexInt `json:"packets"`
+					Bytes           flexInt `json:"bytes"` // See: https://github.com/nlamirault/bbox_exporter/issues/1
+					Packetserrors   flexInt `json:"packetserrors"`
+					Packetsdiscards flexInt `json:"packetsdiscards"`
+					Occupation      flexInt `json:"occupation"`
+					Bandwidth       flexInt `json:"bandwidth"`
+					MaxBandwidth    flexInt `json:"maxBandwidth"`
 				} `json:"tx"`
 			} `json:"stats"`
 		} `json:"ip"`
@@ -93,6 +94,41 @@ type WanIPInformations struct {
 	} `json:"wan"`
 }
 
+type WanDiagsStatistics struct {
+	Diags struct {
+		DNS []struct {
+			Min      int    `json:"min"`
+			Max      int    `json:"max"`
+			Average  int    `json:"average"`
+			Success  int    `json:"success"`
+			Error    int    `json:"error"`
+			Tries    int    `json:"tries"`
+			Status   string `json:"status"`
+			Protocol string `json:"protocol"`
+		} `json:"dns"`
+		Ping []struct {
+			Min      int    `json:"min"`
+			Max      int    `json:"max"`
+			Average  int    `json:"average"`
+			Success  int    `json:"success"`
+			Error    int    `json:"error"`
+			Tries    int    `json:"tries"`
+			Status   string `json:"status"`
+			Protocol string `json:"protocol"`
+		} `json:"ping"`
+		HTTP []struct {
+			Min      int    `json:"min"`
+			Max      int    `json:"max"`
+			Average  int    `json:"average"`
+			Success  int    `json:"success"`
+			Error    int    `json:"error"`
+			Tries    int    `json:"tries"`
+			Status   string `json:"status"`
+			Protocol string `json:"protocol"`
+		} `json:"http"`
+	} `json:"diags"`
+}
+
 func (client *Client) getWanMetrics() (*WanMetrics, error) {
 	var metrics WanMetrics
 
@@ -108,11 +144,17 @@ func (client *Client) getWanMetrics() (*WanMetrics, error) {
 	}
 	metrics.IPStatistics = wanIPStats
 
-	ftthMetrics, err := client.getWanFtthStatistics()
+	ftthStats, err := client.getWanFtthStatistics()
 	if err != nil {
 		return nil, err
 	}
-	metrics.FtthStatistics = ftthMetrics
+	metrics.FtthStatistics = ftthStats
+
+	diagsStats, err := client.getWANDiagnostics()
+	if err != nil {
+		return nil, err
+	}
+	metrics.DiagnosticsStatistics = diagsStats
 
 	return &metrics, nil
 }
@@ -122,7 +164,7 @@ func (client *Client) getWanMetrics() (*WanMetrics, error) {
 func (client *Client) getWanInformations() ([]WanIPInformations, error) {
 	log.Info("Retrieve WAN IP informations from Bbox")
 	var informations []WanIPInformations
-	if err := client.apiRequest("%s/wan/ip", &informations); err != nil {
+	if err := client.apiRequest("/wan/ip", &informations); err != nil {
 		return nil, err
 	}
 	return informations, nil
@@ -132,19 +174,8 @@ func (client *Client) getWanInformations() ([]WanIPInformations, error) {
 // See: https://api.bbox.fr/doc/apirouter/#api-WAN-GetWANIPStats
 func (client *Client) getWanStatistics() ([]WanIPStatistics, error) {
 	log.Info("Retrieve WAN metrics from Bbox")
-	// resp, err := http.Get(fmt.Sprintf("%s/wan/ip/stats", client.URL))
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// defer resp.Body.Close()
-	// body, err := ioutil.ReadAll(resp.Body)
-	// log.Infof("Wan metrics response: %s", body)
 	var metrics []WanIPStatistics
-	// dec := json.NewDecoder(bytes.NewBuffer(body))
-	// if err := dec.Decode(&metrics); err != nil {
-	// 	return nil, err
-	// }
-	if err := client.apiRequest("%s/wan/ip/stats", &metrics); err != nil {
+	if err := client.apiRequest("/wan/ip/stats", &metrics); err != nil {
 		return nil, err
 	}
 	return metrics, nil
@@ -155,8 +186,19 @@ func (client *Client) getWanStatistics() ([]WanIPStatistics, error) {
 func (client *Client) getWanFtthStatistics() (*FtthStatistics, error) {
 	log.Info("Retrieve WAN metrics from Bbox")
 	var metrics FtthStatistics
-	if err := client.apiRequest("%s/wan/ftth/stats", &metrics); err != nil {
+	if err := client.apiRequest("/wan/ftth/stats", &metrics); err != nil {
 		return nil, err
 	}
 	return &metrics, nil
+}
+
+// getWANDiagnostics return results of the tests to retrieve the real state of the Internet connectivity
+// https://api.bbox.fr/doc/apirouter/index.html#api-WAN-GetWANDiags
+func (client *Client) getWANDiagnostics() ([]WanDiagsStatistics, error) {
+	log.Info("Retrieve WAN diagnostics from Bbox")
+	var metrics []WanDiagsStatistics
+	if err := client.apiRequest("/wan/diags", &metrics); err != nil {
+		return nil, err
+	}
+	return metrics, nil
 }

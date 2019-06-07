@@ -120,7 +120,7 @@ func (client *Client) getServicesMetrics() (*ServicesMetrics, error) {
 func (client *Client) getServicesInformations() ([]ServicesInformations, error) {
 	log.Info("Retrieve Services informations from Bbox")
 	var informations []ServicesInformations
-	if err := client.apiRequest("%s/services", &informations); err != nil {
+	if err := client.apiRequest("/services", &informations); err != nil {
 		return nil, err
 	}
 	return informations, nil

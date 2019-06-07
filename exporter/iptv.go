@@ -12,7 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package version
+package exporter
 
-// Version represents the application version using SemVer
-const Version string = "0.2.0"
+import (
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/common/log"
+
+	"github.com/nlamirault/bbox_exporter/bbox"
+)
+
+var (
+	iptvChannel = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "iptv_channel"),
+		"Name of channel",
+		[]string{"name"}, nil,
+	)
+)
+
+func describeIPTVMetrics(ch chan<- *prometheus.Desc) {
+	ch <- iptvChannel
+}
+
+func storeIPTVMetrics(ch chan<- prometheus.Metric, metrics bbox.IPTVMetrics) {
+	log.Info("Store IPTV metrics")
+	storeMetric(ch, float64(metrics.Informations[0].IPTV[0].Receipt), iptvChannel, metrics.Informations[0].IPTV[0].Name)
+}

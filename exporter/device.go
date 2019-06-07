@@ -22,6 +22,16 @@ import (
 )
 
 var (
+	deviceModelName = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "device_model_name"),
+		"Device model name",
+		[]string{"model_name"}, nil,
+	)
+	deviceUsing = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "device_fai_usage"),
+		"FAI box usage",
+		[]string{"using"}, nil,
+	)
 	deviceStatus = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "", "device_status"),
 		"Current status",
@@ -38,105 +48,58 @@ var (
 		nil, nil,
 	)
 
-	deviceMemoryTotal = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "device_memory_total"),
-		"Total memory in kB",
-		nil, nil,
-	)
-	deviceMemoryFree = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "device_memory_free"),
-		"Free memory in kB",
-		nil, nil,
-	)
-	deviceMemoryCached = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "device_memory_cached"),
-		"Cached memory in kB",
-		nil, nil,
+	deviceMemory = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "device_memory"),
+		"Memory in kB",
+		[]string{"type"}, nil,
 	)
 
-	deviceCPUTotal = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "device_cpu_total"),
+	deviceCPU = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "device_cpu"),
 		"CPU Total Time",
-		nil, nil,
-	)
-	deviceCPUUser = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "device_cpu_user"),
-		"CPU User Time",
-		nil, nil,
-	)
-	deviceCPUNice = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "device_cpu_nice"),
-		"CPU Nice Time",
-		nil, nil,
-	)
-	deviceCPUSystem = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "device_cpu_system"),
-		"CPU System Time",
-		nil, nil,
-	)
-	deviceCPUIO = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "device_cpu_io"),
-		"CPU IO Time",
-		nil, nil,
-	)
-	deviceCPUIdle = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "device_cpu_idle"),
-		"CPU Idle Time",
-		nil, nil,
-	)
-	deviceCPUIrq = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "device_cpu_irq"),
-		"CPU Irq Time",
-		nil, nil,
+		[]string{"mode"}, nil,
 	)
 
-	deviceProcessCreated = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "device_process_created"),
-		"Number of created processus",
-		nil, nil,
+	deviceProcess = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "device_process"),
+		"Device process",
+		[]string{"type"}, nil,
 	)
-	deviceProcessRunning = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "device_process_running"),
-		"Number of running processus",
-		nil, nil,
-	)
-	deviceProcessBlocked = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "device_process_blocked"),
-		"Number of blocked processus",
-		nil, nil,
-	)
-
 )
 
 func describeDeviceMetrics(ch chan<- *prometheus.Desc) {
+	ch <- deviceModelName
+	ch <- deviceUsing
 	ch <- deviceStatus
 	ch <- deviceNumberOfBoots
 	ch <- deviceTemperature
-	ch <- deviceCPUTotal
-	ch <- deviceCPUUser
-	ch <- deviceCPUNice
-	ch <- deviceCPUSystem
-	ch <- deviceCPUIO
-	ch <- deviceCPUIdle
-	ch <- deviceCPUIrq
+	ch <- deviceMemory
+	ch <- deviceCPU
+	ch <- deviceProcess
 }
 
 func storeDeviceMetrics(ch chan<- prometheus.Metric, metrics bbox.DeviceMetrics) {
 	log.Info("Store Device metrics")
+	storeMetric(ch, 1.0, deviceModelName, metrics.Informations[0].Device.ModelName)
+	storeMetric(ch, float64(metrics.Informations[0].Device.Using.IPv4), deviceUsing, "ipv4")
+	storeMetric(ch, float64(metrics.Informations[0].Device.Using.IPv6), deviceUsing, "ipv6")
+	storeMetric(ch, float64(metrics.Informations[0].Device.Using.FTTH), deviceUsing, "ftth")
+	storeMetric(ch, float64(metrics.Informations[0].Device.Using.ADSL), deviceUsing, "adsl")
+	storeMetric(ch, float64(metrics.Informations[0].Device.Using.VDSL), deviceUsing, "vdsl")
 	storeMetric(ch, metrics.Informations[0].Device.Status, deviceStatus)
 	storeMetric(ch, metrics.Informations[0].Device.NumberOfBoots, deviceNumberOfBoots)
 	storeMetric(ch, metrics.Informations[0].Device.Temperature.Current, deviceTemperature)
-	storeMetric(ch, metrics.Memory[0].Device.Memory.Total, deviceMemoryTotal)
-	storeMetric(ch, metrics.Memory[0].Device.Memory.Free, deviceMemoryFree)
-	storeMetric(ch, metrics.Memory[0].Device.Memory.Cached, deviceMemoryCached)
-	storeMetric(ch, metrics.CPU[0].Device.CPU.Time.Total, deviceCPUTotal)
-	storeMetric(ch, metrics.CPU[0].Device.CPU.Time.User, deviceCPUUser)
-	storeMetric(ch, metrics.CPU[0].Device.CPU.Time.Nice, deviceCPUNice)
-	storeMetric(ch, metrics.CPU[0].Device.CPU.Time.System, deviceCPUSystem)
-	storeMetric(ch, metrics.CPU[0].Device.CPU.Time.IO, deviceCPUIO)
-	storeMetric(ch, metrics.CPU[0].Device.CPU.Time.Idle, deviceCPUIdle)
-	storeMetric(ch, metrics.CPU[0].Device.CPU.Time.Irq, deviceCPUIrq)
-	storeMetric(ch, metrics.CPU[0].Device.CPU.Process.Created, deviceProcessCreated)
-	storeMetric(ch, metrics.CPU[0].Device.CPU.Process.Running, deviceProcessRunning)
-	storeMetric(ch, metrics.CPU[0].Device.CPU.Process.Blocked, deviceProcessBlocked)
+	storeMetric(ch, metrics.Memory[0].Device.Memory.Total, deviceMemory, "total")
+	storeMetric(ch, metrics.Memory[0].Device.Memory.Free, deviceMemory, "free")
+	storeMetric(ch, metrics.Memory[0].Device.Memory.Cached, deviceMemory, "cached")
+	storeMetric(ch, metrics.CPU[0].Device.CPU.Time.Total, deviceCPU, "total")
+	storeMetric(ch, metrics.CPU[0].Device.CPU.Time.User, deviceCPU, "user")
+	storeMetric(ch, metrics.CPU[0].Device.CPU.Time.Nice, deviceCPU, "nice")
+	storeMetric(ch, metrics.CPU[0].Device.CPU.Time.System, deviceCPU, "system")
+	storeMetric(ch, metrics.CPU[0].Device.CPU.Time.IO, deviceCPU, "io")
+	storeMetric(ch, metrics.CPU[0].Device.CPU.Time.Idle, deviceCPU, "idle")
+	storeMetric(ch, metrics.CPU[0].Device.CPU.Time.Irq, deviceCPU, "irq")
+	storeMetric(ch, metrics.CPU[0].Device.CPU.Process.Created, deviceProcess, "created")
+	storeMetric(ch, metrics.CPU[0].Device.CPU.Process.Running, deviceProcess, "running")
+	storeMetric(ch, metrics.CPU[0].Device.CPU.Process.Blocked, deviceProcess, "blocked")
 }

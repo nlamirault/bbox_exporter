@@ -46,7 +46,7 @@ func (client *Client) getDNSMetrics() (*DNSMetrics, error) {
 func (client *Client) getDNSAverage() ([]DNSAverage, error) {
 	log.Info("Retrieve DNS informations")
 	var dns []DNSAverage
-	if err := client.apiRequest("%s/dns/stats", &dns); err != nil {
+	if err := client.apiRequest("/dns/stats", &dns); err != nil {
 		return nil, err
 	}
 	return dns, nil

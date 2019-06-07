@@ -40,9 +40,9 @@ type Exporter struct {
 }
 
 // NewExporter returns an initialized Exporter.
-func NewExporter(endpoint string) (*Exporter, error) {
+func NewExporter(endpoint string, password string) (*Exporter, error) {
 	log.Infof("Setup BBox exporter using URL: %s", endpoint)
-	bboxClient, err := bbox.NewClient(endpoint)
+	bboxClient, err := bbox.NewClient(endpoint, password)
 	if err != nil {
 		return nil, err
 	}
@@ -59,26 +59,41 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	describeLanMetrics(ch)
 	describeDeviceMetrics(ch)
 	describeDNSMetrics(ch)
+	describeIPTVMetrics(ch)
+	describeServicesMetrics(ch)
+	describeWirelessMetrics(ch)
 }
 
 // Collect the stats from channel and delivers them as Prometheus metrics.
 // It implements prometheus.Collector.
 func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	log.Infof("Bbox exporter starting")
+
+	if err := e.Bbox.Authenticate(); err != nil {
+		ch <- prometheus.MustNewConstMetric(
+			up, prometheus.GaugeValue, 0,
+		)
+		log.Errorf("Bbox authentication error: %s", err.Error())
+		return
+	}
+
 	resp, err := e.Bbox.GetMetrics()
 	if err != nil {
 		ch <- prometheus.MustNewConstMetric(
 			up, prometheus.GaugeValue, 0,
 		)
-		log.Errorf("Bbox error: %s", err.Error())
+		log.Errorf("Bbox API error: %s", err.Error())
 		return
 	}
 	log.Infof("Bbox metrics retrieved")
-	storeWanMetrics(ch, resp.Wan)
-	storeWanFtthMetric(ch, resp.FtthState)
-	storeLanMetrics(ch, resp.Lan)
+	storeServicesMetrics(ch, resp.Services)
 	storeDeviceMetrics(ch, resp.Device)
 	storeDNSMetrics(ch, resp.DNS)
+	storeLanMetrics(ch, resp.Lan)
+	storeWanMetrics(ch, resp.Wan)
+	storeWanFtthMetric(ch, resp.FtthState)
+	storeWirelessMetrics(ch, resp.Wireless)
+	storeIPTVMetrics(ch, resp.IPTV)
 	ch <- prometheus.MustNewConstMetric(
 		up, prometheus.GaugeValue, 1,
 	)

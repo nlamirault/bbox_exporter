@@ -11,6 +11,40 @@ A Prometheus exporter for the Bbox Miami, a Set-Top-Box (TV box) provided by Fre
 
 Metrics are :
 
+| Name                                               | Exposed informations                                  | Labels               |
+| -------------------------------------------------- | ------------------------------------------------------| ---------------------|
+| `bbox_device_cpu`                                  | CPU Time                                              | `mode`               |
+| `bbox_device_memory`                               | Memory in kB                                          | ̀`type`               |
+| `bbox_device_process`                              | Processus                                             | `type`               |
+| `bbox_device_status`                               | Current status                                        |
+| `bbox_device_temperature`                          | Current internal temperature in °C                    |
+| `bbox_dns_average`                                 | Average of average dns response time                  |
+| `bbox_dns_max`                                     | Maximun of average dns response time                  |
+| `bbox_dns_min`                                     | Minimun of average dns response time                  |
+| `bbox_dns_number_of_queries`                       | Number of queries                                     |
+| `bbox_lan_received_bytes`                          | RX bytes                                              |
+| `bbox_lan_received_packets`                        | RX packets                                            |
+| `bbox_lan_received_packets_discards`               | RX packets discards                                   |
+| `bbox_lan_received_packets_errors`                 | RX packets in error                                   |
+| `bbox_lan_transmitted_bytes`                       | TX bytes                                              |
+| `bbox_lan_transmitted_packets`                     | TX packets                                            |
+| `bbox_lan_transmitted_packets_discards`            | TX packets discards                                   |
+| `bbox_lan_transmitted_packets_errors`              | TX packets in error                                   |
+| `bbox_up`                                          | Was the last query of BBox successful.                |
+| `bbox_wan_ftth_state`                              | LinkState of the GEth FTTH port                       |
+| `bbox_wan_received_bandwidth`                      | RX bandwith available                                 |
+| `bbox_wan_received_bandwidth_max`                  | RX bandwith available                                 |
+| `bbox_wan_received_bytes`                          | RX bytes                                              |
+| `bbox_wan_received_packets`                        | RX packets                                            |
+| `bbox_wan_received_packets_discards`               | RX packets discards                                   |
+| `bbox_wan_received_packets_errors`                 | RX packets in error                                   |
+| `bbox_wan_transmitted_bandwidth`                   | TX bandwith available                                 |
+| `bbox_wan_transmitted_bandwidth_max`               | TX maximum bandwith available                         |
+| `bbox_wan_transmitted_bytes`                       | TX bytes                                              |
+| `bbox_wan_transmitted_packets`                     | TX packets                                            |
+| `bbox_wan_transmitted_packets_discards`            | TX packets discards                                   |
+| `bbox_wan_transmitted_packets_errors`              | TX packets in error                                   |
+
 
 
 ## Installation
@@ -26,8 +60,7 @@ You can download the binaries :
 
 Launch the Prometheus exporter :
 
-    $ bbox_exporter -log.level=debug
-
+    $ bbox_exporter
 
 ## Development
 

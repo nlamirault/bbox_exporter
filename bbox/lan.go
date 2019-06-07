@@ -69,8 +69,8 @@ type LanHost struct {
 		Interface        int    `json:"interface"`
 		Ethernetspeed    int    `json:"ethernetspeed"`
 	} `json:"plc"`
-	Lease           int `json:"lease"`
-	Active          int `json:"active"`
+	Lease           flexInt `json:"lease"`
+	Active          int     `json:"active"`
 	Parentalcontrol struct {
 		Enable          int    `json:"enable"`
 		Status          string `json:"status"`
@@ -90,16 +90,16 @@ type LanStatistics struct {
 	Lan struct {
 		Stats struct {
 			Rx struct {
-				Packets         float64 `json:"packets"`
-				Bytes           string  `json:"bytes"` // See: https://github.com/nlamirault/bbox_exporter/issues/1
-				Packetserrors   float64 `json:"packetserrors"`
-				Packetsdiscards float64 `json:"packetsdiscards"`
+				Packets         flexInt `json:"packets"`
+				Bytes           flexInt `json:"bytes"`
+				Packetserrors   flexInt `json:"packetserrors"`
+				Packetsdiscards flexInt `json:"packetsdiscards"`
 			} `json:"rx"`
 			Tx struct {
-				Packets         float64 `json:"packets"`
-				Bytes           string  `json:"bytes"` // See: https://github.com/nlamirault/bbox_exporter/issues/1
-				Packetserrors   float64 `json:"packetserrors"`
-				Packetsdiscards float64 `json:"packetsdiscards"`
+				Packets         flexInt `json:"packets"`
+				Bytes           flexInt `json:"bytes"` // See: https://github.com/nlamirault/bbox_exporter/issues/1
+				Packetserrors   flexInt `json:"packetserrors"`
+				Packetsdiscards flexInt `json:"packetsdiscards"`
 			} `json:"tx"`
 		} `json:"stats"`
 	} `json:"lan"`
@@ -156,7 +156,7 @@ func (client *Client) getLanMetrics() (*LanMetrics, error) {
 func (client *Client) getLanInformations() ([]LanIPInformations, error) {
 	log.Info("Retrieve LAN IP informations from Bbox")
 	var informations []LanIPInformations
-	if err := client.apiRequest("%s/lan/ip", &informations); err != nil {
+	if err := client.apiRequest("/lan/ip", &informations); err != nil {
 		return nil, err
 	}
 	return informations, nil
@@ -167,7 +167,7 @@ func (client *Client) getLanInformations() ([]LanIPInformations, error) {
 func (client *Client) getLanDevices() ([]LanDevice, error) {
 	log.Info("Retrieve LAN devices from Bbox")
 	var metrics []LanDevice
-	if err := client.apiRequest("%s/hosts", &metrics); err != nil {
+	if err := client.apiRequest("/hosts", &metrics); err != nil {
 		return nil, err
 	}
 	return metrics, nil
@@ -178,7 +178,7 @@ func (client *Client) getLanDevices() ([]LanDevice, error) {
 func (client *Client) getLanStatistics() ([]LanStatistics, error) {
 	log.Info("Retrieve LAN IP statistics")
 	var metrics []LanStatistics
-	if err := client.apiRequest("%s/lan/stats", &metrics); err != nil {
+	if err := client.apiRequest("/lan/stats", &metrics); err != nil {
 		return nil, err
 	}
 	return metrics, nil
