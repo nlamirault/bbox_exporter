@@ -46,6 +46,8 @@ Metrics are :
 | `bbox_wan_transmitted_packets_errors`              | TX packets in error                                   |
 
 
+![Dashboard](dashboard.png)
+
 
 ## Installation
 
