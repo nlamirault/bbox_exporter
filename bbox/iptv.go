@@ -34,11 +34,11 @@ type IPTVInformations struct {
 		// The channel name
 		Name string `json:"name"`
 		// the channel number
-		Number int `json:"number"`
+		Number string `json:"number"`
 		// Defines if the channel is really received or not
-		Receipt int `json:"receipt"`
+		Receipt string `json:"receipt"`
 		// Channel Id in the epg
-		Epgid int `json:"epgid"`
+		Epgid string `json:"epgid"`
 	} `json:"iptv"`
 	Now string `json:"now"`
 }

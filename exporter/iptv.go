@@ -33,5 +33,5 @@ func describeIPTVMetrics(ch chan<- *prometheus.Desc) {
 }
 
 func storeIPTVMetrics(ch chan<- prometheus.Metric, metrics bbox.IPTVMetrics) {
-	storeMetric(ch, float64(metrics.Informations[0].IPTV[0].Receipt), iptvChannel, metrics.Informations[0].IPTV[0].Name)
+	// storeMetric(ch, float64(metrics.Informations[0].IPTV[0].Receipt), iptvChannel, metrics.Informations[0].IPTV[0].Name)
 }
