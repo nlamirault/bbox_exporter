@@ -15,16 +15,22 @@
 package main
 
 import (
-	"flag"
-	"fmt"
+	// "flag"
+
 	"net/http"
 	"os"
 
+	"github.com/go-kit/kit/log/level"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/common/log"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/prometheus/common/promlog"
+	"github.com/prometheus/common/promlog/flag"
+	"github.com/prometheus/common/version"
+	"github.com/prometheus/exporter-toolkit/web"
+	webflag "github.com/prometheus/exporter-toolkit/web/kingpinflag"
+	"gopkg.in/alecthomas/kingpin.v2"
 
 	"github.com/nlamirault/bbox_exporter/exporter"
-	"github.com/nlamirault/bbox_exporter/version"
 )
 
 const (
@@ -32,69 +38,59 @@ const (
 )
 
 var (
-	debug         bool
-	vrs           bool
-	listenAddress string
-	metricsPath   string
-	endpoint      string
-	password      string
+	webConfig = webflag.AddFlags(kingpin.CommandLine)
+	endpoint  = kingpin.Flag(
+		"endpoint",
+		"Endpoint of Bbox.",
+	).Default("https://mabbox.bytel.fr").String()
+	password = kingpin.Flag(
+		"password",
+		"The admin password.",
+	).String()
+	listenAddress = kingpin.Flag(
+		"web.listen-address",
+		"Address to listen on for web interface and telemetry.",
+	).Default(":9311").String()
+	metricPath = kingpin.Flag(
+		"web.telemetry-path",
+		"Path under which to expose metrics.",
+	).Default("/metrics").String()
 )
 
-func init() {
-	// parse flags
-	flag.BoolVar(&vrs, "version", false, "print version and exit")
-	flag.BoolVar(&debug, "debug", false, "enable debug mode")
-	flag.StringVar(&listenAddress, "web.listen-address", ":9311", "Address to listen on for web interface and telemetry.")
-	flag.StringVar(&metricsPath, "web.telemetry-path", "/metrics", "Path under which to expose metrics.")
-	flag.StringVar(&endpoint, "bbox", "https://mabbox.bytel.fr", "Endpoint of Bbox")
-	flag.StringVar(&password, "password", "", "The admin password")
-	flag.Usage = func() {
-		fmt.Fprint(os.Stderr, fmt.Sprintf(banner, version.Version))
-		flag.PrintDefaults()
-	}
-
-	flag.Parse()
-	if vrs {
-		fmt.Printf("%s", version.Version)
-		os.Exit(0)
-	}
-
-	if len(endpoint) == 0 {
-		usageAndExit("bbox endpoint cannot be empty.", 1)
-	}
-	if len(password) == 0 {
-		usageAndExit("bbox password cannot be empty.", 1)
-	}
-}
-
 func main() {
-	exporter, err := exporter.NewExporter(endpoint, password)
+	// Parse flags.
+	promlogConfig := &promlog.Config{}
+	flag.AddFlags(kingpin.CommandLine, promlogConfig)
+	kingpin.Version(version.Print("bbox_exporter"))
+	kingpin.HelpFlag.Short('h')
+	kingpin.Parse()
+	logger := promlog.New(promlogConfig)
+
+	level.Info(logger).Log("msg", "Starting bbox_exporter", "version", version.Info())
+	level.Info(logger).Log("msg", "Build context", version.BuildContext())
+
+	exporter, err := exporter.NewExporter(*endpoint, *password, logger)
 	if err != nil {
-		log.Errorf("Can't create exporter : %s", err)
+		level.Error(logger).Log("msg", "Can't create exporter : %s", err)
 		os.Exit(1)
 	}
-	log.Infoln("Register exporter")
 	prometheus.MustRegister(exporter)
 
-	http.Handle(metricsPath, prometheus.Handler())
+	http.Handle(*metricPath, promhttp.Handler())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`<html>
              <head><title>bbox Exporter</title></head>
              <body>
              <h1>bbox Exporter</h1>
-             <p><a href='` + metricsPath + `'>Metrics</a></p>
+             <p><a href='` + *metricPath + `'>Metrics</a></p>
              </body>
              </html>`))
 	})
 
-	log.Infoln("Listening on", listenAddress)
-	log.Fatal(http.ListenAndServe(listenAddress, nil))
-}
-func usageAndExit(message string, exitCode int) {
-	if message != "" {
-		fmt.Fprintf(os.Stderr, message)
-		fmt.Fprintf(os.Stderr, "\n")
+	level.Info(logger).Log("msg", "Listening on", listenAddress)
+	srv := &http.Server{Addr: *listenAddress}
+	if err := web.ListenAndServe(srv, *webConfig, logger); err != nil {
+		level.Error(logger).Log("msg", "Error starting HTTP server", "err", err)
+		os.Exit(1)
 	}
-	flag.Usage()
-	os.Exit(exitCode)
 }

@@ -16,7 +16,6 @@ package exporter
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/common/log"
 
 	"github.com/nlamirault/bbox_exporter/bbox"
 )
@@ -79,7 +78,6 @@ func describeDeviceMetrics(ch chan<- *prometheus.Desc) {
 }
 
 func storeDeviceMetrics(ch chan<- prometheus.Metric, metrics bbox.DeviceMetrics) {
-	log.Info("Store Device metrics")
 	storeMetric(ch, 1.0, deviceModelName, metrics.Informations[0].Device.ModelName)
 	storeMetric(ch, float64(metrics.Informations[0].Device.Using.IPv4), deviceUsing, "ipv4")
 	storeMetric(ch, float64(metrics.Informations[0].Device.Using.IPv6), deviceUsing, "ipv6")

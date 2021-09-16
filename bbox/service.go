@@ -14,7 +14,7 @@
 
 package bbox
 
-import "github.com/prometheus/common/log"
+import "github.com/go-kit/kit/log/level"
 
 type ServicesMetrics struct {
 	Informations []ServicesInformations
@@ -118,7 +118,7 @@ func (client *Client) getServicesMetrics() (*ServicesMetrics, error) {
 // getServicesInformations returns Services information
 // See: https://api.bbox.fr/doc/apirouter/#api-Services-GetServices
 func (client *Client) getServicesInformations() ([]ServicesInformations, error) {
-	log.Info("Retrieve Services informations from Bbox")
+	level.Info(client.logger).Log("msg", "Retrieve Services informations from Bbox")
 	var informations []ServicesInformations
 	if err := client.apiRequest("/services", &informations); err != nil {
 		return nil, err

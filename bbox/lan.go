@@ -15,7 +15,7 @@
 package bbox
 
 import (
-	"github.com/prometheus/common/log"
+	"github.com/go-kit/kit/log/level"
 )
 
 type LanMetrics struct {
@@ -154,7 +154,7 @@ func (client *Client) getLanMetrics() (*LanMetrics, error) {
 // returns ip configuration of the Bbox local Network.
 // See: https://api.bbox.fr/doc/apirouter/#api-LAN-GetLanIP
 func (client *Client) getLanInformations() ([]LanIPInformations, error) {
-	log.Info("Retrieve LAN IP informations from Bbox")
+	level.Info(client.logger).Log("msg", "Retrieve LAN IP informations from Bbox")
 	var informations []LanIPInformations
 	if err := client.apiRequest("/lan/ip", &informations); err != nil {
 		return nil, err
@@ -165,7 +165,7 @@ func (client *Client) getLanInformations() ([]LanIPInformations, error) {
 // getLanDevices returns information on all devices connected to the Bbox.
 // See: https://api.bbox.fr/doc/apirouter/#api-LAN-GetHosts
 func (client *Client) getLanDevices() ([]LanDevice, error) {
-	log.Info("Retrieve LAN devices from Bbox")
+	level.Info(client.logger).Log("msg", "Retrieve LAN devices from Bbox")
 	var metrics []LanDevice
 	if err := client.apiRequest("/hosts", &metrics); err != nil {
 		return nil, err
@@ -176,7 +176,7 @@ func (client *Client) getLanDevices() ([]LanDevice, error) {
 // getLanStatistics returns statistics of the Bbox local Network.
 // See: https://api.bbox.fr/doc/apirouter/#api-LAN-GetLanStats
 func (client *Client) getLanStatistics() ([]LanStatistics, error) {
-	log.Info("Retrieve LAN IP statistics")
+	level.Info(client.logger).Log("msg", "Retrieve LAN IP statistics")
 	var metrics []LanStatistics
 	if err := client.apiRequest("/lan/stats", &metrics); err != nil {
 		return nil, err

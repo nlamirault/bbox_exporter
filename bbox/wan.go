@@ -15,7 +15,7 @@
 package bbox
 
 import (
-	"github.com/prometheus/common/log"
+	"github.com/go-kit/kit/log/level"
 )
 
 type WanMetrics struct {
@@ -162,7 +162,7 @@ func (client *Client) getWanMetrics() (*WanMetrics, error) {
 // getWanInformations returns WAN IP Information
 // See: https://api.bbox.fr/doc/apirouter/#api-WAN-GetWANIP
 func (client *Client) getWanInformations() ([]WanIPInformations, error) {
-	log.Info("Retrieve WAN IP informations from Bbox")
+	level.Info(client.logger).Log("msg", "Retrieve WAN IP informations from Bbox")
 	var informations []WanIPInformations
 	if err := client.apiRequest("/wan/ip", &informations); err != nil {
 		return nil, err
@@ -173,7 +173,7 @@ func (client *Client) getWanInformations() ([]WanIPInformations, error) {
 // getWanStatistics returns WAN IP statistics
 // See: https://api.bbox.fr/doc/apirouter/#api-WAN-GetWANIPStats
 func (client *Client) getWanStatistics() ([]WanIPStatistics, error) {
-	log.Info("Retrieve WAN metrics from Bbox")
+	level.Info(client.logger).Log("msg", "Retrieve WAN metrics from Bbox")
 	var metrics []WanIPStatistics
 	if err := client.apiRequest("/wan/ip/stats", &metrics); err != nil {
 		return nil, err
@@ -184,7 +184,7 @@ func (client *Client) getWanStatistics() ([]WanIPStatistics, error) {
 // getWanFtthStatistics returns information about FTTH
 // See: https://api.bbox.fr/doc/apirouter/#api-WAN-GetFTTHStats
 func (client *Client) getWanFtthStatistics() (*FtthStatistics, error) {
-	log.Info("Retrieve WAN metrics from Bbox")
+	level.Info(client.logger).Log("msg", "Retrieve WAN metrics from Bbox")
 	var metrics FtthStatistics
 	if err := client.apiRequest("/wan/ftth/stats", &metrics); err != nil {
 		return nil, err
@@ -195,7 +195,7 @@ func (client *Client) getWanFtthStatistics() (*FtthStatistics, error) {
 // getWANDiagnostics return results of the tests to retrieve the real state of the Internet connectivity
 // https://api.bbox.fr/doc/apirouter/index.html#api-WAN-GetWANDiags
 func (client *Client) getWANDiagnostics() ([]WanDiagsStatistics, error) {
-	log.Info("Retrieve WAN diagnostics from Bbox")
+	level.Info(client.logger).Log("msg", "Retrieve WAN diagnostics from Bbox")
 	var metrics []WanDiagsStatistics
 	if err := client.apiRequest("/wan/diags", &metrics); err != nil {
 		return nil, err

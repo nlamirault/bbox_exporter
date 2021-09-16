@@ -14,7 +14,7 @@
 
 package bbox
 
-import "github.com/prometheus/common/log"
+import "github.com/go-kit/kit/log/level"
 
 type DNSMetrics struct {
 	Principal []DNSAverage `json:"principal"`
@@ -44,7 +44,7 @@ func (client *Client) getDNSMetrics() (*DNSMetrics, error) {
 // getDNSAverage returns information about dns average.
 // See: https://api.bbox.fr/doc/apirouter/#api-DNS-GetDNS
 func (client *Client) getDNSAverage() ([]DNSAverage, error) {
-	log.Info("Retrieve DNS informations")
+	level.Info(client.logger).Log("msg", "Retrieve DNS informations")
 	var dns []DNSAverage
 	if err := client.apiRequest("/dns/stats", &dns); err != nil {
 		return nil, err

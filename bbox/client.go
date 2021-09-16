@@ -26,7 +26,8 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/prometheus/common/log"
+	"github.com/go-kit/kit/log/level"
+	"github.com/go-kit/log"
 
 	"github.com/nlamirault/bbox_exporter/version"
 )
@@ -59,17 +60,19 @@ type Client struct {
 	url      string
 	cookies  []*http.Cookie
 	password string
+	logger   log.Logger
 }
 
-func NewClient(endpoint string, password string) (*Client, error) {
+func NewClient(endpoint string, password string, logger log.Logger) (*Client, error) {
 	url, err := url.Parse(endpoint)
 	if err != nil || url.Scheme != "https" {
 		return nil, fmt.Errorf("Invalid bbox address: %s", err)
 	}
-	log.Infof("bbox client creation")
+	level.Info(logger).Log("msg", "bbox client creation")
 	return &Client{
 		url:      fmt.Sprintf("%s%s", url.String(), apiVersion),
 		password: password,
+		logger:   logger,
 	}, nil
 }
 
@@ -82,7 +85,7 @@ func NewClient(endpoint string, password string) (*Client, error) {
 
 // GetMetrics retrieve available metrics for the API Router
 func (client *Client) GetMetrics() (*Metrics, error) {
-	log.Infof("Get metrics")
+	level.Info(client.logger).Log("msg", "Get metrics")
 
 	var metrics Metrics
 
@@ -90,56 +93,56 @@ func (client *Client) GetMetrics() (*Metrics, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Device metrics : %s", err)
 	}
-	log.Infof("Device metrics: %#v", deviceMetrics)
+	level.Info(client.logger).Log("msg", "Device metrics: %#v", deviceMetrics)
 	metrics.Device = *deviceMetrics
 
 	servicesMetrics, err := client.getServicesMetrics()
 	if err != nil {
 		return nil, fmt.Errorf("Services metrics: %s", err)
 	}
-	log.Infof("Services metrics: %#v", servicesMetrics)
+	level.Info(client.logger).Log("msg", "Services metrics: %#v", servicesMetrics)
 	metrics.Services = *servicesMetrics
 
 	wanMetrics, err := client.getWanMetrics()
 	if err != nil {
 		return nil, fmt.Errorf("WAN metrics: %s", err)
 	}
-	log.Infof("WAN metrics: %#v", wanMetrics)
+	level.Info(client.logger).Log("msg", "WAN metrics: %#v", wanMetrics)
 	metrics.Wan = *wanMetrics
 
 	lanMetrics, err := client.getLanMetrics()
 	if err != nil {
 		return nil, fmt.Errorf("LAN metrics: %s", err)
 	}
-	log.Infof("LAN metrics: %#v", lanMetrics)
+	level.Info(client.logger).Log("msg", "LAN metrics: %#v", lanMetrics)
 	metrics.Lan = *lanMetrics
 
 	wirelessMetrics, err := client.getWirelessMetrics()
 	if err != nil {
 		return nil, fmt.Errorf("Wireless metrics: %s", err)
 	}
-	log.Infof("WIFI metrics: %#v", wirelessMetrics)
+	level.Info(client.logger).Log("msg", "WIFI metrics: %#v", wirelessMetrics)
 	metrics.Wireless = *wirelessMetrics
 
 	dnsMetrics, err := client.getDNSMetrics()
 	if err != nil {
 		return nil, fmt.Errorf("DNS metrics: %s", err)
 	}
-	log.Infof("DNS metrics: %#v", dnsMetrics)
+	level.Info(client.logger).Log("msg", "DNS metrics: %#v", dnsMetrics)
 	metrics.DNS = *dnsMetrics
 
 	iptv, err := client.getIPTVMetrics()
 	if err != nil {
 		return nil, fmt.Errorf("IPTV metrics: %s", err)
 	}
-	log.Infof("IPTV metrics : %#v", iptv)
+	level.Info(client.logger).Log("msg", "IPTV metrics : %#v", iptv)
 	metrics.IPTV = *iptv
 
 	return &metrics, nil
 }
 
 func (client *Client) Authenticate() error {
-	log.Infof("Bbox API perform authentication")
+	level.Info(client.logger).Log("msg", "Bbox API perform authentication")
 	resp, err := http.Post(
 		fmt.Sprintf("%s/login", client.url),
 		"application/x-www-form-urlencoded",
@@ -147,19 +150,19 @@ func (client *Client) Authenticate() error {
 	if err != nil {
 		return err
 	}
-	log.Infof("Login response: %v", resp)
+	level.Info(client.logger).Log("msg", "Login response: %v", resp)
 	cookies := resp.Cookies()
 	if len(resp.Cookies()) == 0 {
 		return fmt.Errorf("Can't retreive Cookie from API response")
 	}
-	// log.Infof("Cookies : ================== %s", cookies)
+	// level.Info(client.logger).Log("msg", "Cookies : ================== %s", cookies)
 	client.cookies = cookies
 	return nil
 }
 
 func (client *Client) apiRequest(request string, v interface{}) error {
 	url := fmt.Sprintf("%s%s", client.url, request)
-	log.Infof("Bbox API request : %s", url)
+	level.Info(client.logger).Log("msg", "Bbox API request : %s", url)
 
 	req, err := http.NewRequest("GET", url, nil)
 	// resp, err := http.Get(url)
@@ -181,7 +184,7 @@ func (client *Client) apiRequest(request string, v interface{}) error {
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
-	log.Infof("Bbox API response: %s", body)
+	level.Info(client.logger).Log("msg", "Bbox API response: %s", body)
 	dec := json.NewDecoder(bytes.NewBuffer(body))
 	if err := dec.Decode(v); err != nil {
 		return err

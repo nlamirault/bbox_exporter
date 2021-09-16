@@ -14,9 +14,7 @@
 
 package bbox
 
-import (
-	"github.com/prometheus/common/log"
-)
+import "github.com/go-kit/kit/log/level"
 
 type DeviceMetrics struct {
 	Informations []DeviceInformations `json:"informations"`
@@ -102,7 +100,7 @@ func (client *Client) getDeviceMetrics() (*DeviceMetrics, error) {
 // getDeviceInformations returns Bbox information
 // See: https://api.bbox.fr/doc/apirouter/#api-Device-GetDevice
 func (client *Client) getDeviceInformations() ([]DeviceInformations, error) {
-	log.Info("Retrieve device informations")
+	level.Info(client.logger).Log("msg", "Retrieve device informations")
 	var informations []DeviceInformations
 	if err := client.apiRequest("/device", &informations); err != nil {
 		return nil, err
@@ -113,7 +111,7 @@ func (client *Client) getDeviceInformations() ([]DeviceInformations, error) {
 // getDeviceCPU returns Bbox CPU information
 // See: https://api.bbox.fr/doc/apirouter/#api-Device-GetDeviceCPU
 func (client *Client) getDeviceCPU() ([]DeviceCPU, error) {
-	log.Info("Retrieve device CPU")
+	level.Info(client.logger).Log("msg", "Retrieve device CPU")
 	var cpu []DeviceCPU
 	if err := client.apiRequest("/device/cpu", &cpu); err != nil {
 		return nil, err
@@ -124,7 +122,7 @@ func (client *Client) getDeviceCPU() ([]DeviceCPU, error) {
 // getDeviceMemory returns Bbox Memory information
 // See: https://api.bbox.fr/doc/apirouter/#api-Device-GetDeviceMem
 func (client *Client) getDeviceMemory() ([]DeviceMemory, error) {
-	log.Info("Retrieve device memory")
+	level.Info(client.logger).Log("msg", "Retrieve device memory")
 	var memory []DeviceMemory
 	if err := client.apiRequest("/device/mem", &memory); err != nil {
 		return nil, err

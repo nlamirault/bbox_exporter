@@ -34,12 +34,12 @@ repos:
         - --license-filepath
         - hack/config/licence.txt
         - --comment-style
-        - // 
+        - //
 - repo: git://github.com/dnephin/pre-commit-golang
   rev: master
   hooks:
     - id: go-fmt
-    # - id: go-vet
+    - id: go-vet
     # - id: go-lint
     # - id: go-imports
     # - id: go-cyclo

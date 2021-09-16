@@ -15,8 +15,9 @@
 package exporter
 
 import (
+	"github.com/go-kit/kit/log/level"
+	"github.com/go-kit/log"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/common/log"
 
 	"github.com/nlamirault/bbox_exporter/bbox"
 )
@@ -36,18 +37,20 @@ var (
 // Exporter collects Bbox stats from the given server and exports them using
 // the prometheus metrics package.
 type Exporter struct {
-	Bbox *bbox.Client
+	Bbox   *bbox.Client
+	logger log.Logger
 }
 
 // NewExporter returns an initialized Exporter.
-func NewExporter(endpoint string, password string) (*Exporter, error) {
-	log.Infof("Setup BBox exporter using URL: %s", endpoint)
-	bboxClient, err := bbox.NewClient(endpoint, password)
+func NewExporter(endpoint string, password string, logger log.Logger) (*Exporter, error) {
+	level.Info(logger).Log("msg", "Setup BBox exporter using URL: %s", endpoint)
+	bboxClient, err := bbox.NewClient(endpoint, password, logger)
 	if err != nil {
 		return nil, err
 	}
 	return &Exporter{
-		Bbox: bboxClient,
+		Bbox:   bboxClient,
+		logger: logger,
 	}, nil
 }
 
@@ -67,13 +70,13 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 // Collect the stats from channel and delivers them as Prometheus metrics.
 // It implements prometheus.Collector.
 func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
-	log.Infof("Bbox exporter starting")
+	level.Info(e.logger).Log("msg", "Bbox exporter starting")
 
 	if err := e.Bbox.Authenticate(); err != nil {
 		ch <- prometheus.MustNewConstMetric(
 			up, prometheus.GaugeValue, 0,
 		)
-		log.Errorf("Bbox authentication error: %s", err.Error())
+		level.Error(e.logger).Log("msg", "Bbox authentication error: %s", err.Error())
 		return
 	}
 
@@ -82,10 +85,10 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		ch <- prometheus.MustNewConstMetric(
 			up, prometheus.GaugeValue, 0,
 		)
-		log.Errorf("Bbox API error: %s", err.Error())
+		level.Error(e.logger).Log("msg", "Bbox API error: %s", err.Error())
 		return
 	}
-	log.Infof("Bbox metrics retrieved")
+	level.Info(e.logger).Log("msg", "Bbox metrics retrieved")
 	storeServicesMetrics(ch, resp.Services)
 	storeDeviceMetrics(ch, resp.Device)
 	storeDNSMetrics(ch, resp.DNS)
@@ -97,7 +100,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	ch <- prometheus.MustNewConstMetric(
 		up, prometheus.GaugeValue, 1,
 	)
-	log.Infof("BBox exporter finished")
+	level.Info(e.logger).Log("msg", "BBox exporter finished")
 }
 
 func storeMetric(ch chan<- prometheus.Metric, value float64, desc *prometheus.Desc, labels ...string) {

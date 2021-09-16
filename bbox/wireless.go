@@ -17,7 +17,7 @@ package bbox
 import (
 	"fmt"
 
-	"github.com/prometheus/common/log"
+	"github.com/go-kit/kit/log/level"
 )
 
 type WirelessMetrics struct {
@@ -67,7 +67,7 @@ func (client *Client) getWirelessMetrics() (*WirelessMetrics, error) {
 }
 
 func (client *Client) getWirelessStatistics(which string) ([]WirelessStatistics, error) {
-	log.Infof("Retrieve WIFI %sGhz metrics from Bbox", which)
+	level.Info(client.logger).Log("msg", "Retrieve WIFI %sGhz metrics from Bbox", which)
 
 	var metrics []WirelessStatistics
 	if err := client.apiRequest(fmt.Sprintf("/wireless/%s/stats", which), &metrics); err != nil {
