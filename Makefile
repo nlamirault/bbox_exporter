@@ -1,5 +1,5 @@
-# Copyright (C) 2019 Nicolas Lamirault <nicolas.lamirault@gmail.com>
-
+# Copyright (C) 2021 Nicolas Lamirault <nicolas.lamirault@gmail.com>
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -13,13 +13,15 @@
 # limitations under the License.
 
 APP = bbox_exporter
+BANNER = B B O X  E X P O R T E R
 
 VERSION=$(shell \
-        grep "const Version" version/version.go \
-        |awk -F'=' '{print $$2}' \
-        |sed -e "s/[^0-9.]//g" \
+	grep "const Version" version/version.go \
+	|awk -F'=' '{print $$2}' \
+	|sed -e "s/[^0-9.]//g" \
 	|sed -e "s/ //g")
 
+DEBUG ?=
 SHELL = /bin/bash
 
 DIR = $(shell pwd)
@@ -32,6 +34,11 @@ GO = go
 GOX = gox -osarch="linux/amd64" -osarch="linux/arm64" -osarch="linux/arm" -osarch="darwin/amd64" -osarch="windows/amd64"
 GOX_ARGS = "-output={{.Dir}}-$(VERSION)_{{.OS}}_{{.Arch}}"
 
+MAIN = github.com/nlamirault/bbox_exporter
+
+PACKAGE=$(APP)-$(VERSION)
+ARCHIVE=$(PACKAGE).tar
+
 EXE = $(shell ls bbox_exporter-*)
 BINTRAY_URI = https://api.bintray.com
 BINTRAY_USERNAME = nlamirault
@@ -41,24 +48,59 @@ NO_COLOR=\033[0m
 OK_COLOR=\033[32;01m
 ERROR_COLOR=\033[31;01m
 WARN_COLOR=\033[33;01m
+INFO_COLOR=\033[36m
+WHITE_COLOR=\033[1m
 
 MAKE_COLOR=\033[33;01m%-20s\033[0m
 
-MAIN = github.com/nlamirault/bbox_exporter
-
-PACKAGE=$(APP)-$(VERSION)
-ARCHIVE=$(PACKAGE).tar
-
 .DEFAULT_GOAL := help
+
+OK=[✅]
+KO=[❌]
+WARN=[⚠️]
 
 .PHONY: help
 help:
-	@echo -e "$(OK_COLOR)==== $(APP) [$(VERSION)] ====$(NO_COLOR)"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "$(MAKE_COLOR) : %s\n", $$1, $$2}'
+	@echo -e "$(OK_COLOR)                  $(BANNER)$(NO_COLOR)"
+	@echo "------------------------------------------------------------------"
+	@echo ""
+	@echo -e "${ERROR_COLOR}Usage${NO_COLOR}: make ${INFO_COLOR}<target>${NO_COLOR}"
+	@awk 'BEGIN {FS = ":.*##"; } /^[a-zA-Z0-9_-]+:.*?##/ { printf "  ${INFO_COLOR}%-30s${NO_COLOR} %s\n", $$1, $$2 } /^##@/ { printf "\n${WHITE_COLOR}%s${NO_COLOR}\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
+guard-%:
+	@if [ "${${*}}" = "" ]; then \
+		echo -e "$(ERROR_COLOR)Environment variable $* not set$(NO_COLOR)"; \
+		exit 1; \
+	fi
+
+check-%:
+	@if $$(hash $* 2> /dev/null); then \
+		echo -e "$(OK_COLOR)$(OK)$(NO_COLOR) $*"; \
+	else \
+		echo -e "$(ERROR_COLOR)$(KO)$(NO_COLOR) $*"; \
+	fi
+
+print-%:
+	@if [ "${$*}" == "" ]; then \
+		echo -e "$(ERROR_COLOR)[KO]$(NO_COLOR) $* = ${$*}"; \
+	else \
+		echo -e "$(OK_COLOR)[OK]$(NO_COLOR) $* = ${$*}"; \
+	fi
+
+# ====================================
+# D E V E L O P M E N T
+# ====================================
+
+##@ Development
+
+.PHONY: clean
 clean: ## Cleanup
 	@echo -e "$(OK_COLOR)[$(APP)] Cleanup$(NO_COLOR)"
 	@rm -fr $(EXE) $(APP) $(APP)-*.tar.gz
+
+.PHONY: validate
+validate: ## Execute git-hooks
+	@poetry run pre-commit run -a
 
 .PHONY: build
 build: ## Make binary
@@ -75,22 +117,11 @@ run: ## Start exporter
 	@echo -e "$(OK_COLOR)[$(APP)] Start the exporter $(NO_COLOR)"
 	@./$(APP) -log.level DEBUG
 
-.PHONY: lint
-lint: ## Launch golint
-	@$(foreach file,$(SRCS),golint $(file) || exit;)
+# ====================================
+# D O C K E R
+# ====================================
 
-.PHONY: vet
-vet: ## Launch go vet
-	@$(foreach file,$(SRCS),$(GO) vet $(file) || exit;)
-
-.PHONY: errcheck
-errcheck: ## Launch go errcheck
-	@echo -e "$(OK_COLOR)[$(APP)] Go Errcheck $(NO_COLOR)"
-	@$(foreach pkg,$(PKGS),errcheck $(pkg) || exit;)
-
-.PHONY: coverage
-coverage: ## Launch code coverage
-	@$(foreach pkg,$(PKGS),$(GO) test -cover $(pkg) || exit;)
+##@ Docker
 
 docker-build: ## Build Docker image
 	@echo -e "$(OK_COLOR)Docker build $(APP):$(VERSION)$(NO_COLOR)"
@@ -102,20 +133,17 @@ docker-run: ## Run the Docker image
 		$(APP):$(VERSION) \
 		-log.level debug -bbox https://mabbox.bytel.fr
 
-gox: ## Make all binaries
-	@echo -e "$(OK_COLOR)[$(APP)] Create binaries $(NO_COLOR)"
-	$(GOX) $(GOX_ARGS) github.com/nlamirault/bbox_exporter
+		
 
-.PHONY: binaries
-binaries: ## Upload all binaries
-	@echo -e "$(OK_COLOR)[$(APP)] Upload binaries to Bintray $(NO_COLOR)"
-	for i in $(EXE); do \
-		curl -T $$i \
-			-u$(BINTRAY_USERNAME):$(BINTRAY_APIKEY) \
-			"$(BINTRAY_URI)/content/$(BINTRAY_USERNAME)/$(BINTRAY_REPOSITORY)/$(APP)/${VERSION}/$$i;publish=1"; \
-        done
+# gox: ## Make all binaries
+# 	@echo -e "$(OK_COLOR)[$(APP)] Create binaries $(NO_COLOR)"
+# 	$(GOX) $(GOX_ARGS) github.com/nlamirault/bbox_exporter
 
-# for goprojectile
-.PHONY: gopath
-gopath:
-	@echo `pwd`:`pwd`/vendor
+# .PHONY: binaries
+# binaries: ## Upload all binaries
+# 	@echo -e "$(OK_COLOR)[$(APP)] Upload binaries to Bintray $(NO_COLOR)"
+# 	for i in $(EXE); do \
+# 		curl -T $$i \
+# 			-u$(BINTRAY_USERNAME):$(BINTRAY_APIKEY) \
+# 			"$(BINTRAY_URI)/content/$(BINTRAY_USERNAME)/$(BINTRAY_REPOSITORY)/$(APP)/${VERSION}/$$i;publish=1"; \
+#         done
