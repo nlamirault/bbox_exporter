@@ -92,7 +92,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	storeServicesMetrics(ch, resp.Services)
 	storeDeviceMetrics(ch, resp.Device)
 	storeDNSMetrics(ch, resp.DNS)
-	storeLanMetrics(ch, resp.Lan)
+	storeLanMetrics(e.logger, ch, resp.Lan)
 	storeWanMetrics(ch, resp.Wan)
 	storeWanFtthMetric(ch, resp.FtthState)
 	storeWirelessMetrics(ch, resp.Wireless)

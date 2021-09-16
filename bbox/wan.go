@@ -34,7 +34,7 @@ type WanIPStatistics struct {
 					Bytes           flexInt `json:"bytes"` // See: https://github.com/nlamirault/bbox_exporter/issues/1
 					Packetserrors   flexInt `json:"packetserrors"`
 					Packetsdiscards flexInt `json:"packetsdiscards"`
-					Occupation      flexInt `json:"occupation"`
+					Occupation      float64 `json:"occupation"`
 					Bandwidth       flexInt `json:"bandwidth"`
 					MaxBandwidth    flexInt `json:"maxBandwidth"`
 				} `json:"rx"`
@@ -43,7 +43,7 @@ type WanIPStatistics struct {
 					Bytes           flexInt `json:"bytes"` // See: https://github.com/nlamirault/bbox_exporter/issues/1
 					Packetserrors   flexInt `json:"packetserrors"`
 					Packetsdiscards flexInt `json:"packetsdiscards"`
-					Occupation      flexInt `json:"occupation"`
+					Occupation      float64 `json:"occupation"`
 					Bandwidth       flexInt `json:"bandwidth"`
 					MaxBandwidth    flexInt `json:"maxBandwidth"`
 				} `json:"tx"`
@@ -97,34 +97,34 @@ type WanIPInformations struct {
 type WanDiagsStatistics struct {
 	Diags struct {
 		DNS []struct {
-			Min      int    `json:"min"`
-			Max      int    `json:"max"`
-			Average  int    `json:"average"`
-			Success  int    `json:"success"`
-			Error    int    `json:"error"`
-			Tries    int    `json:"tries"`
-			Status   string `json:"status"`
-			Protocol string `json:"protocol"`
+			Min      float64 `json:"min"`
+			Max      float64 `json:"max"`
+			Average  float64 `json:"average"`
+			Success  int     `json:"success"`
+			Error    int     `json:"error"`
+			Tries    int     `json:"tries"`
+			Status   string  `json:"status"`
+			Protocol string  `json:"protocol"`
 		} `json:"dns"`
 		Ping []struct {
-			Min      int    `json:"min"`
-			Max      int    `json:"max"`
-			Average  int    `json:"average"`
-			Success  int    `json:"success"`
-			Error    int    `json:"error"`
-			Tries    int    `json:"tries"`
-			Status   string `json:"status"`
-			Protocol string `json:"protocol"`
+			Min      float64 `json:"min"`
+			Max      float64 `json:"max"`
+			Average  float64 `json:"average"`
+			Success  int     `json:"success"`
+			Error    int     `json:"error"`
+			Tries    int     `json:"tries"`
+			Status   string  `json:"status"`
+			Protocol string  `json:"protocol"`
 		} `json:"ping"`
 		HTTP []struct {
-			Min      int    `json:"min"`
-			Max      int    `json:"max"`
-			Average  int    `json:"average"`
-			Success  int    `json:"success"`
-			Error    int    `json:"error"`
-			Tries    int    `json:"tries"`
-			Status   string `json:"status"`
-			Protocol string `json:"protocol"`
+			Min      float64 `json:"min"`
+			Max      float64 `json:"max"`
+			Average  float64 `json:"average"`
+			Success  int     `json:"success"`
+			Error    int     `json:"error"`
+			Tries    int     `json:"tries"`
+			Status   string  `json:"status"`
+			Protocol string  `json:"protocol"`
 		} `json:"http"`
 	} `json:"diags"`
 }

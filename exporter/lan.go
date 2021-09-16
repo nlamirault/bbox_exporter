@@ -15,6 +15,8 @@
 package exporter
 
 import (
+	"github.com/go-kit/kit/log/level"
+	"github.com/go-kit/log"
 	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/nlamirault/bbox_exporter/bbox"
@@ -82,25 +84,33 @@ func describeLanMetrics(ch chan<- *prometheus.Desc) {
 	ch <- rxPacketsDiscardsLan
 }
 
-func storeLanMetrics(ch chan<- prometheus.Metric, metrics bbox.LanMetrics) {
+func storeLanMetrics(logger log.Logger, ch chan<- prometheus.Metric, metrics bbox.LanMetrics) {
 	// storeMetric(ch, float64(len(metrics.Devices[0].Hosts.List)), hosts)
 	lanHosts := map[string]int{}
-	for _, host := range metrics.Devices[0].Hosts.List {
-		// log.Infof("Host: %s, IP: %s %s %s => [%s]", host.Hostname, host.Ipaddress, host.Type, host.Link, host.Active)
-		if host.Active == 1 {
-			lanHosts[host.Link] = lanHosts[host.Link] + 1
+	if len(metrics.Devices) > 0 {
+		for _, host := range metrics.Devices[0].Hosts.List {
+			// log.Infof("Host: %s, IP: %s %s %s => [%s]", host.Hostname, host.Ipaddress, host.Type, host.Link, host.Active)
+			if host.Active == 1 {
+				lanHosts[host.Link] = lanHosts[host.Link] + 1
+			}
 		}
+	} else {
+		level.Info(logger).Log("msg", "No LAN devices")
 	}
 	for link, val := range lanHosts {
 		storeMetric(ch, float64(val), hosts, link)
 	}
 	// log.Infof("%+v", metrics[0].Hosts.List[0])
-	storeMetric(ch, float64(metrics.Statistics[0].Lan.Stats.Tx.Bytes), txBytesLan)
-	storeMetric(ch, float64(metrics.Statistics[0].Lan.Stats.Tx.Packets), txPacketsLan)
-	storeMetric(ch, float64(metrics.Statistics[0].Lan.Stats.Tx.Packetserrors), txPacketsErrorsLan)
-	storeMetric(ch, float64(metrics.Statistics[0].Lan.Stats.Tx.Packetsdiscards), txPacketsDiscardsLan)
-	storeMetric(ch, float64(metrics.Statistics[0].Lan.Stats.Rx.Bytes), rxBytesLan)
-	storeMetric(ch, float64(metrics.Statistics[0].Lan.Stats.Rx.Packets), rxPacketsLan)
-	storeMetric(ch, float64(metrics.Statistics[0].Lan.Stats.Rx.Packetserrors), rxPacketsErrorsLan)
-	storeMetric(ch, float64(metrics.Statistics[0].Lan.Stats.Rx.Packetsdiscards), rxPacketsDiscardsLan)
+	if len(metrics.Statistics) > 0 {
+		storeMetric(ch, float64(metrics.Statistics[0].Lan.Stats.Tx.Bytes), txBytesLan)
+		storeMetric(ch, float64(metrics.Statistics[0].Lan.Stats.Tx.Packets), txPacketsLan)
+		storeMetric(ch, float64(metrics.Statistics[0].Lan.Stats.Tx.Packetserrors), txPacketsErrorsLan)
+		storeMetric(ch, float64(metrics.Statistics[0].Lan.Stats.Tx.Packetsdiscards), txPacketsDiscardsLan)
+		storeMetric(ch, float64(metrics.Statistics[0].Lan.Stats.Rx.Bytes), rxBytesLan)
+		storeMetric(ch, float64(metrics.Statistics[0].Lan.Stats.Rx.Packets), rxPacketsLan)
+		storeMetric(ch, float64(metrics.Statistics[0].Lan.Stats.Rx.Packetserrors), rxPacketsErrorsLan)
+		storeMetric(ch, float64(metrics.Statistics[0].Lan.Stats.Rx.Packetsdiscards), rxPacketsDiscardsLan)
+	} else {
+		level.Warn(logger).Log("msg", "No metrics statistics for LAN")
+	}
 }

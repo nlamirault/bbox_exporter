@@ -44,7 +44,7 @@ type LanHost struct {
 	Ethernet   struct {
 		Physicalport int    `json:"physicalport"`
 		Logicalport  int    `json:"logicalport"`
-		Speed        int    `json:"speed"`
+		Speed        string `json:"speed"`
 		Mode         string `json:"mode"`
 	} `json:"ethernet"`
 	Stb struct {
