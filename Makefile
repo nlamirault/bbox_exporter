@@ -100,7 +100,7 @@ clean: ## Cleanup
 
 .PHONY: validate
 validate: ## Execute git-hooks
-	@poetry run pre-commit run -a
+	@pre-commit run -a
 
 .PHONY: build
 build: ## Make binary
@@ -133,7 +133,7 @@ docker-run: ## Run the Docker image
 		$(APP):$(VERSION) \
 		-log.level debug -bbox https://mabbox.bytel.fr
 
-		
+
 
 # gox: ## Make all binaries
 # 	@echo -e "$(OK_COLOR)[$(APP)] Create binaries $(NO_COLOR)"
