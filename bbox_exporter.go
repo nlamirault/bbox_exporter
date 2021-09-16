@@ -67,11 +67,11 @@ func main() {
 	logger := promlog.New(promlogConfig)
 
 	level.Info(logger).Log("msg", "Starting bbox_exporter", "version", version.Info())
-	level.Info(logger).Log("msg", "Build context", version.BuildContext())
+	level.Info(logger).Log("msg", "Build context", "context", version.BuildContext())
 
 	exporter, err := exporter.NewExporter(*endpoint, *password, logger)
 	if err != nil {
-		level.Error(logger).Log("msg", "Can't create exporter : %s", err)
+		level.Error(logger).Log("msg", "Can't create exporter", "err", err)
 		os.Exit(1)
 	}
 	prometheus.MustRegister(exporter)
@@ -87,7 +87,7 @@ func main() {
              </html>`))
 	})
 
-	level.Info(logger).Log("msg", "Listening on", listenAddress)
+	level.Info(logger).Log("msg", "Starting HTTP server", "port", listenAddress)
 	srv := &http.Server{Addr: *listenAddress}
 	if err := web.ListenAndServe(srv, *webConfig, logger); err != nil {
 		level.Error(logger).Log("msg", "Error starting HTTP server", "err", err)

@@ -43,7 +43,7 @@ type Exporter struct {
 
 // NewExporter returns an initialized Exporter.
 func NewExporter(endpoint string, password string, logger log.Logger) (*Exporter, error) {
-	level.Info(logger).Log("msg", "Setup BBox exporter using URL: %s", endpoint)
+	level.Info(logger).Log("msg", "Setup BBox exporter", "endpoint", endpoint)
 	bboxClient, err := bbox.NewClient(endpoint, password, logger)
 	if err != nil {
 		return nil, err
