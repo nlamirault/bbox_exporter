@@ -16,7 +16,6 @@ package exporter
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/common/log"
 
 	"github.com/nlamirault/bbox_exporter/bbox"
 )
@@ -34,6 +33,5 @@ func describeIPTVMetrics(ch chan<- *prometheus.Desc) {
 }
 
 func storeIPTVMetrics(ch chan<- prometheus.Metric, metrics bbox.IPTVMetrics) {
-	log.Info("Store IPTV metrics")
 	storeMetric(ch, float64(metrics.Informations[0].IPTV[0].Receipt), iptvChannel, metrics.Informations[0].IPTV[0].Name)
 }

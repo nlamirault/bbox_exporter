@@ -14,7 +14,7 @@
 
 package bbox
 
-import "github.com/prometheus/common/log"
+import "github.com/go-kit/kit/log/level"
 
 type IPTVMetrics struct {
 	Informations []IPTVInformations `json:"informations"`
@@ -56,7 +56,7 @@ func (client *Client) getIPTVMetrics() (*IPTVMetrics, error) {
 }
 
 func (client *Client) getIPTVInformations() ([]IPTVInformations, error) {
-	log.Info("Retrieve IP TV informations")
+	level.Info(client.logger).Log("msg", "Retrieve IP TV informations")
 	var iptvInformations []IPTVInformations
 	if err := client.apiRequest("/iptv", &iptvInformations); err != nil {
 		return nil, err
@@ -65,7 +65,7 @@ func (client *Client) getIPTVInformations() ([]IPTVInformations, error) {
 }
 
 // func (client *Client) getIPTVDiagnostic() ([]IPTVInformations, error) {
-// 	log.Info("Retrieve IP TV diagnostic")
+// 	level.Info(client.logger).Log("msg", "Retrieve IP TV diagnostic")
 // 	if err := client.apiRequest("/iptv/diags", nil); err != nil {
 // 		return nil, err
 // 	}

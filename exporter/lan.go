@@ -16,7 +16,6 @@ package exporter
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/common/log"
 
 	"github.com/nlamirault/bbox_exporter/bbox"
 )
@@ -84,7 +83,6 @@ func describeLanMetrics(ch chan<- *prometheus.Desc) {
 }
 
 func storeLanMetrics(ch chan<- prometheus.Metric, metrics bbox.LanMetrics) {
-	log.Info("Store LAN metrics")
 	// storeMetric(ch, float64(len(metrics.Devices[0].Hosts.List)), hosts)
 	lanHosts := map[string]int{}
 	for _, host := range metrics.Devices[0].Hosts.List {

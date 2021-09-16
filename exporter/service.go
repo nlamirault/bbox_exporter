@@ -15,7 +15,6 @@ package exporter
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/common/log"
 
 	"github.com/nlamirault/bbox_exporter/bbox"
 )
@@ -33,7 +32,6 @@ func describeServicesMetrics(ch chan<- *prometheus.Desc) {
 }
 
 func storeServicesMetrics(ch chan<- prometheus.Metric, metrics bbox.ServicesMetrics) {
-	log.Info("Store Services metrics")
 	storeMetric(ch, float64(metrics.Informations[0].Services.Firewall.Enable), serviceUp, "firewall")
 	storeMetric(ch, float64(metrics.Informations[0].Services.Dyndns.Enable), serviceUp, "dydns")
 	storeMetric(ch, float64(metrics.Informations[0].Services.Dhcp.Enable), serviceUp, "dhcp")

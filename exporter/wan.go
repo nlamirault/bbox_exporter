@@ -18,7 +18,6 @@ import (
 	"strings"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/common/log"
 
 	"github.com/nlamirault/bbox_exporter/bbox"
 )
@@ -157,7 +156,6 @@ func describeWanMetrics(ch chan<- *prometheus.Desc) {
 }
 
 func storeWanMetrics(ch chan<- prometheus.Metric, metrics bbox.WanMetrics) {
-	log.Info("Store WAN metrics")
 	storeMetric(ch, float64(metrics.IPStatistics[0].WAN.IP.Stats.Tx.Bytes), txBytesWan)
 	storeMetric(ch, float64(metrics.IPStatistics[0].WAN.IP.Stats.Tx.Packets), txPacketsWan)
 	storeMetric(ch, float64(metrics.IPStatistics[0].WAN.IP.Stats.Tx.Packetserrors), txPacketsErrorsWan)
@@ -173,7 +171,6 @@ func storeWanMetrics(ch chan<- prometheus.Metric, metrics bbox.WanMetrics) {
 	storeMetric(ch, float64(metrics.IPStatistics[0].WAN.IP.Stats.Rx.Bandwidth), rxBandwidthWan)
 	storeMetric(ch, float64(metrics.IPStatistics[0].WAN.IP.Stats.Rx.MaxBandwidth), rxBandwidthMaxWan)
 
-	log.Infof("%+v", metrics.DiagnosticsStatistics[0].Diags.Ping[0])
 	for _, val := range metrics.DiagnosticsStatistics[0].Diags.DNS {
 		if val.Tries > 0 {
 			storeMetric(ch, float64(val.Min), diagnosticsMinWan, "dns")

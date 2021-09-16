@@ -16,7 +16,6 @@ package exporter
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/common/log"
 
 	"github.com/nlamirault/bbox_exporter/bbox"
 )
@@ -52,7 +51,6 @@ func describeDNSMetrics(ch chan<- *prometheus.Desc) {
 }
 
 func storeDNSMetrics(ch chan<- prometheus.Metric, metrics bbox.DNSMetrics) {
-	log.Info("Store DNS metrics")
 	storeMetric(ch, metrics.Principal[0].DNS.NumberOfQueries, dnsNumberOfQueries)
 	storeMetric(ch, metrics.Principal[0].DNS.Min, dnsMin)
 	storeMetric(ch, metrics.Principal[0].DNS.Max, dnsMax)

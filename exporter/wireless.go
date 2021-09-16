@@ -16,7 +16,6 @@ package exporter
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/common/log"
 
 	"github.com/nlamirault/bbox_exporter/bbox"
 )
@@ -78,7 +77,6 @@ func describeWirelessMetrics(ch chan<- *prometheus.Desc) {
 }
 
 func storeWirelessMetrics(ch chan<- prometheus.Metric, metrics bbox.WirelessMetrics) {
-	log.Info("Store Wireless metrics")
 	// storeMetric(ch, float64(metrics.Wireless5GhzStatistics[0].Wireless.SSID.Stats.Tx.Bytes), txBytesWireless, "5ghz")
 	// storeMetric(ch, float64(metrics.Wireless5GhzStatistics[0].Wireless.SSID.Stats.Tx.Packets), txPacketsWireless, "5ghz")
 	// storeMetric(ch, float64(metrics.Wireless5GhzStatistics[0].Wireless.SSID.Stats.Tx.Packetserrors), txPacketsErrorsWireless, "5ghz")

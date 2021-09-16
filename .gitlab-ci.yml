@@ -75,4 +75,3 @@ deploy:hub:
     - docker push "nlamirault/$CI_PROJECT_NAME:v${VERSION}.arm"
   only:
     - tags
-
