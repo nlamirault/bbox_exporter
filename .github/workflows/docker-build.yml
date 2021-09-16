@@ -17,12 +17,11 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: Docker / Publish
+name: Docker / Build
 
 on:
   push:
-    tags:
-      - v*
+  pull_request:
 
 env:
   REGISTRY: ghcr.io
