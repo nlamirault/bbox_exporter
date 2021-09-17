@@ -12,7 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package version
+package bbox
 
-// Version represents the application version using SemVer
-const Version string = "0.2.0"
+type APIError struct {
+	Exception struct {
+		Domain string `json:"domain"`
+		Code   string `json:"code"`
+		Errors []struct {
+			Name   string `json:"name"`
+			Reason string `json:"reason"`
+		} `json:"errors"`
+	} `json:"exception"`
+}

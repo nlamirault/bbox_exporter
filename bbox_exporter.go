@@ -17,6 +17,7 @@ package main
 import (
 	// "flag"
 
+	"fmt"
 	"net/http"
 	"os"
 
@@ -76,15 +77,38 @@ func main() {
 	}
 	prometheus.MustRegister(exporter)
 
-	http.Handle(*metricPath, promhttp.Handler())
+	// http.Handle(*metricPath, promhttp.Handler())
+	http.Handle(*metricPath,
+		promhttp.InstrumentMetricHandler(
+			prometheus.DefaultRegisterer,
+			promhttp.HandlerFor(
+				prometheus.DefaultGatherer,
+				promhttp.HandlerOpts{
+					// ErrorLog: &promHTTPLogger{
+					// 	logger: logger,
+					// },
+				},
+			),
+		),
+	)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`<html>
-             <head><title>bbox Exporter</title></head>
+             <head><title>BBox Exporter</title></head>
              <body>
-             <h1>bbox Exporter</h1>
+             <h1>BBox Exporter</h1>
              <p><a href='` + *metricPath + `'>Metrics</a></p>
+			 <h2>Build</h2>
+             <pre>` + version.Info() + ` ` + version.BuildContext() + `</pre>
              </body>
              </html>`))
+	})
+	http.HandleFunc("/-/healthy", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, "OK")
+	})
+	http.HandleFunc("/-/ready", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, "OK")
 	})
 
 	level.Info(logger).Log("msg", "Starting HTTP server", "port", listenAddress)

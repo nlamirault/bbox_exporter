@@ -43,7 +43,7 @@ type Exporter struct {
 
 // NewExporter returns an initialized Exporter.
 func NewExporter(endpoint string, password string, logger log.Logger) (*Exporter, error) {
-	level.Info(logger).Log("msg", "Setup BBox exporter", "endpoint", endpoint)
+	level.Info(logger).Log("msg", "Setup BBox exporter")
 	bboxClient, err := bbox.NewClient(endpoint, password, logger)
 	if err != nil {
 		return nil, err
@@ -76,7 +76,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		ch <- prometheus.MustNewConstMetric(
 			up, prometheus.GaugeValue, 0,
 		)
-		level.Error(e.logger).Log("msg", "Bbox authentication error: %s", err.Error())
+		level.Error(e.logger).Log("msg", "Bbox authentication error", "err", err.Error())
 		return
 	}
 
@@ -85,9 +85,10 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		ch <- prometheus.MustNewConstMetric(
 			up, prometheus.GaugeValue, 0,
 		)
-		level.Error(e.logger).Log("msg", "Bbox API error: %s", err.Error())
+		level.Error(e.logger).Log("msg", "Bbox API error", "err", err.Error())
 		return
 	}
+
 	level.Info(e.logger).Log("msg", "Bbox metrics retrieved")
 	storeServicesMetrics(ch, resp.Services)
 	storeDeviceMetrics(ch, resp.Device)
@@ -100,7 +101,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	ch <- prometheus.MustNewConstMetric(
 		up, prometheus.GaugeValue, 1,
 	)
-	level.Info(e.logger).Log("msg", "BBox exporter finished")
+	level.Info(e.logger).Log("msg", "Metrics collection finished")
 }
 
 func storeMetric(ch chan<- prometheus.Metric, value float64, desc *prometheus.Desc, labels ...string) {
