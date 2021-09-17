@@ -91,14 +91,14 @@ func (client *Client) GetMetrics() (*Metrics, error) {
 
 	deviceMetrics, err := client.getDeviceMetrics()
 	if err != nil {
-		return nil, fmt.Errorf("Device metrics : %s", err)
+		return nil, fmt.Errorf("device metrics : %s", err)
 	}
 	level.Info(client.logger).Log("msg", "Device metrics", "metrics", deviceMetrics)
 	metrics.Device = *deviceMetrics
 
 	servicesMetrics, err := client.getServicesMetrics()
 	if err != nil {
-		return nil, fmt.Errorf("Services metrics: %s", err)
+		return nil, fmt.Errorf("services metrics: %s", err)
 	}
 	level.Info(client.logger).Log("msg", "Services metrics", "metrics", servicesMetrics)
 	metrics.Services = *servicesMetrics
@@ -187,7 +187,7 @@ func (client *Client) apiRequest(request string, v interface{}) error {
 	if err != nil {
 		return err
 	}
-	level.Debug(client.logger).Log("msg", "Bbox API response", "response", body)
+	level.Debug(client.logger).Log("msg", "Bbox API response", "response", string(body))
 	dec := json.NewDecoder(bytes.NewBuffer(body))
 	if err := dec.Decode(v); err != nil {
 		return err
