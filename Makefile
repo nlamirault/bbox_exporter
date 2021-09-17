@@ -15,11 +15,18 @@
 APP = bbox_exporter
 BANNER = B B O X  E X P O R T E R
 
-VERSION=$(shell \
-	grep "const Version" version/version.go \
-	|awk -F'=' '{print $$2}' \
-	|sed -e "s/[^0-9.]//g" \
-	|sed -e "s/ //g")
+# Needs to be defined before including Makefile.common to auto-generate targets
+DOCKER_ARCHS ?= amd64 armv7 arm64
+
+include Makefile.common
+
+DOCKER_IMAGE_NAME ?= bbox-exporter
+
+# VERSION=$(shell \
+# 	grep "const Version" version/version.go \
+# 	|awk -F'=' '{print $$2}' \
+# 	|sed -e "s/[^0-9.]//g" \
+# 	|sed -e "s/ //g")
 
 DEBUG ?=
 SHELL = /bin/bash
@@ -102,20 +109,20 @@ clean: ## Cleanup
 validate: ## Execute git-hooks
 	@pre-commit run -a
 
-.PHONY: build
-build: ## Make binary
-	@echo -e "$(OK_COLOR)[$(APP)] Build $(NO_COLOR)"
-	@$(GO) build .
+# .PHONY: build
+# build: ## Make binary
+# 	@echo -e "$(OK_COLOR)[$(APP)] Build $(NO_COLOR)"
+# 	@$(GO) build .
 
-.PHONY: test
-test: ## Launch unit tests
-	@echo -e "$(OK_COLOR)[$(APP)] Launch unit tests $(NO_COLOR)"
-	@$(GO) test
+# .PHONY: test
+# test: ## Launch unit tests
+# 	@echo -e "$(OK_COLOR)[$(APP)] Launch unit tests $(NO_COLOR)"
+# 	@$(GO) test
 
-.PHONY: run
-run: ## Start exporter
-	@echo -e "$(OK_COLOR)[$(APP)] Start the exporter $(NO_COLOR)"
-	@./$(APP) -log.level DEBUG
+# .PHONY: run
+# run: ## Start exporter
+# 	@echo -e "$(OK_COLOR)[$(APP)] Start the exporter $(NO_COLOR)"
+# 	@./$(APP) -log.level DEBUG
 
 # ====================================
 # D O C K E R
@@ -125,25 +132,8 @@ run: ## Start exporter
 
 docker-build: ## Build Docker image
 	@echo -e "$(OK_COLOR)Docker build $(APP):$(VERSION)$(NO_COLOR)"
-	@docker build -t $(APP):$(VERSION) .
+	@DOCKER_BUILDKIT=1 docker build -t $(APP):$(VERSION) .
 
 docker-run: ## Run the Docker image
 	@echo -e "$(OK_COLOR)Docker run $(APP):$(VERSION)$(NO_COLOR)"
-	@docker run --rm=true \
-		$(APP):$(VERSION) \
-		-log.level debug -bbox https://mabbox.bytel.fr
-
-
-
-# gox: ## Make all binaries
-# 	@echo -e "$(OK_COLOR)[$(APP)] Create binaries $(NO_COLOR)"
-# 	$(GOX) $(GOX_ARGS) github.com/nlamirault/bbox_exporter
-
-# .PHONY: binaries
-# binaries: ## Upload all binaries
-# 	@echo -e "$(OK_COLOR)[$(APP)] Upload binaries to Bintray $(NO_COLOR)"
-# 	for i in $(EXE); do \
-# 		curl -T $$i \
-# 			-u$(BINTRAY_USERNAME):$(BINTRAY_APIKEY) \
-# 			"$(BINTRAY_URI)/content/$(BINTRAY_USERNAME)/$(BINTRAY_REPOSITORY)/$(APP)/${VERSION}/$$i;publish=1"; \
-#         done
+	@docker run --rm=true $(APP):$(VERSION) /bbox_exporter --help

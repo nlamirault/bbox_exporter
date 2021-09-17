@@ -28,21 +28,20 @@ import (
 
 	"github.com/go-kit/kit/log/level"
 	"github.com/go-kit/log"
-
-	"github.com/nlamirault/bbox_exporter/version"
+	// "github.com/nlamirault/bbox_exporter/version"
 )
 
 const (
-	acceptHeader = "application/json"
-	mediaType    = "application/json"
+	// acceptHeader = "application/json"
+	// mediaType    = "application/json"
 
 	apiVersion = "/api/v1"
 )
 
-var (
-	application = "bbox-exporter"
-	userAgent   = fmt.Sprintf("%s/%s", application, version.Version)
-)
+// var (
+// 	application = "bbox-exporter"
+// 	userAgent   = fmt.Sprintf("prom/%s", application)
+// )
 
 // Metrics define Bbox Prometheus metrics
 type Metrics struct {
@@ -68,7 +67,7 @@ func NewClient(endpoint string, password string, logger log.Logger) (*Client, er
 	if err != nil || url.Scheme != "https" {
 		return nil, fmt.Errorf("invalid bbox address: %s", err)
 	}
-	level.Info(logger).Log("msg", "bbox client creation")
+	level.Info(logger).Log("msg", "Create client", "endpoint", endpoint)
 	return &Client{
 		url:      fmt.Sprintf("%s%s", url.String(), apiVersion),
 		password: password,
@@ -142,30 +141,42 @@ func (client *Client) GetMetrics() (*Metrics, error) {
 }
 
 func (client *Client) Authenticate() error {
-	level.Info(client.logger).Log("msg", "Bbox API perform authentication")
+	request := fmt.Sprintf("%s/login", client.url)
+	level.Info(client.logger).Log("msg", "API request", "api", request)
 	resp, err := http.Post(
-		fmt.Sprintf("%s/login", client.url),
+		request,
 		"application/x-www-form-urlencoded",
 		bytes.NewBuffer([]byte(fmt.Sprintf("password=%s", client.password))))
 	if err != nil {
 		return err
 	}
-	level.Info(client.logger).Log("msg", "Login response", "response", resp)
+	level.Info(client.logger).Log("msg", "API response", "api", request, "code", resp.StatusCode)
+	if resp.StatusCode > 300 {
+		defer resp.Body.Close()
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return fmt.Errorf("authentication failed: %s", err)
+		}
+		dec := json.NewDecoder(bytes.NewBuffer(body))
+		var apiError APIError
+		if err := dec.Decode(&apiError); err != nil {
+			return fmt.Errorf("authentication failed: %s", err)
+		}
+		return fmt.Errorf("authentication failed: %+v", apiError)
+	}
 	cookies := resp.Cookies()
 	if len(resp.Cookies()) == 0 {
 		return fmt.Errorf("can't retreive Cookie from API response")
 	}
-	// level.Info(client.logger).Log("msg", "Cookies : ================== %s", cookies)
 	client.cookies = cookies
 	return nil
 }
 
 func (client *Client) apiRequest(request string, v interface{}) error {
 	url := fmt.Sprintf("%s%s", client.url, request)
-	level.Debug(client.logger).Log("msg", "Bbox API request", "request", url)
+	level.Debug(client.logger).Log("msg", "API request", "request", url)
 
 	req, err := http.NewRequest("GET", url, nil)
-	// resp, err := http.Get(url)
 	if err != nil {
 		return err
 	}
@@ -182,15 +193,19 @@ func (client *Client) apiRequest(request string, v interface{}) error {
 	if err != nil {
 		return nil
 	}
+
 	defer resp.Body.Close()
+	level.Debug(client.logger).Log("msg", "API response check", "request", url, "code", resp.StatusCode)
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
-	level.Debug(client.logger).Log("msg", "Bbox API response", "response", string(body))
+
+	level.Debug(client.logger).Log("msg", "API response value", "request", url, "content", string(body))
 	dec := json.NewDecoder(bytes.NewBuffer(body))
 	if err := dec.Decode(v); err != nil {
 		return err
 	}
+	level.Info(client.logger).Log("msg", "API entity", "api", fmt.Sprintf("%+v", v))
 	return nil
 }

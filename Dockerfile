@@ -19,8 +19,10 @@ ADD . /go/src/app
 
 RUN go get -d -v ./...
 
-RUN go build -o /go/bin/app
+RUN go build -o /go/bin/bbox_exporter
 
 FROM gcr.io/distroless/base
-COPY --from=build-env /go/bin/app /
-CMD ["/app"]
+COPY --from=build-env /go/bin/bbox_exporter /
+# set the uid as an integer for compatibility with runAsNonRoot in Kubernetes
+USER 65534:65534
+CMD ["/bbox_exporter"]
