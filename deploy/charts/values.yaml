@@ -20,17 +20,20 @@ image:
   pullPolicy: IfNotPresent
 
 exporter:
+  # -- Bbox URL
   endpoint: https://mabbox.bytel.fr
   log:
+    # -- Log format. Could be logfmt or json
     format: logfmt
+    # -- Log level
     level: info
   web:
-    ## -- HTTP port used
+    # -- HTTP port used
     port: 9311
-    ## -- Path under which to expose metrics.
+    # -- Path under which to expose metrics.
     path: /metrics
 
-## The name of a secret in the same kubernetes namespace which contain values to be added to the environment
+# -- The name of a secret in the same kubernetes namespace which contain values to be added to the environment
 envFromSecret: "bbox-exporter"
 
 nodeSelector: {}
@@ -97,9 +100,10 @@ podAnnotations: {}
 
 replicas: 1
 
-# Enable this if you're using https://github.com/coreos/prometheus-operator
 serviceMonitor:
+  # -- Enable this if you're using https://github.com/coreos/prometheus-operator
   enabled: false
+  # -- Namespace to deploy the ServiceMonitor
   namespace: monitoring
 
   # fallback to the prometheus default unless specified
@@ -114,13 +118,6 @@ serviceMonitor:
   # [Scraping SNMP-exporter](https://github.com/prometheus/snmp_exporter#configure-the-snmp_exporter-as-a-target-to-scrape)
   honorLabels: true
 
-  params:
-    enabled: false
-    conf:
-      module:
-      - if_mib
-      target:
-      - 127.0.0.1
-
-  path: /snmp
+  # -- Path to scrape metrics
+  path: /metrics
   scrapeTimeout: 10s

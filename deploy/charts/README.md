@@ -22,12 +22,12 @@ Prometheus BBOX Exporter
 |-----|------|---------|-------------|
 | additionalLabels | object | `{}` |  |
 | affinity | object | `{}` |  |
-| envFromSecret | string | `"bbox-exporter"` |  |
-| exporter.endpoint | string | `"https://mabbox.bytel.fr"` |  |
-| exporter.log.format | string | `"logfmt"` |  |
-| exporter.log.level | string | `"info"` |  |
-| exporter.web.path | string | `"/metrics"` |  |
-| exporter.web.port | int | `9311` |  |
+| envFromSecret | string | `"bbox-exporter"` | The name of a secret in the same kubernetes namespace which contain values to be added to the environment |
+| exporter.endpoint | string | `"https://mabbox.bytel.fr"` | Bbox URL |
+| exporter.log.format | string | `"logfmt"` | Log format. Could be logfmt or json |
+| exporter.log.level | string | `"info"` | Log level |
+| exporter.web.path | string | `"/metrics"` | Path under which to expose metrics. |
+| exporter.web.port | int | `9311` | HTTP port used |
 | extraSecretMounts | list | `[]` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.repository | string | `"ghcr.io/nlamirault/bbox_exporter"` |  |
@@ -47,13 +47,10 @@ Prometheus BBOX Exporter
 | service.type | string | `"ClusterIP"` |  |
 | serviceAccount.create | bool | `true` |  |
 | serviceAccount.name | string | `nil` |  |
-| serviceMonitor.enabled | bool | `false` |  |
+| serviceMonitor.enabled | bool | `false` | Enable this if you're using https://github.com/coreos/prometheus-operator |
 | serviceMonitor.honorLabels | bool | `true` |  |
-| serviceMonitor.namespace | string | `"monitoring"` |  |
-| serviceMonitor.params.conf.module[0] | string | `"if_mib"` |  |
-| serviceMonitor.params.conf.target[0] | string | `"127.0.0.1"` |  |
-| serviceMonitor.params.enabled | bool | `false` |  |
-| serviceMonitor.path | string | `"/snmp"` |  |
+| serviceMonitor.namespace | string | `"monitoring"` | Namespace to deploy the ServiceMonitor |
+| serviceMonitor.path | string | `"/metrics"` | Path to scrape metrics |
 | serviceMonitor.scrapeTimeout | string | `"10s"` |  |
 | serviceMonitor.selector.prometheus | string | `"kube-prometheus"` |  |
 | tolerations | list | `[]` |  |
