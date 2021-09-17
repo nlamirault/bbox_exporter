@@ -17,7 +17,7 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: Docker / Publish
+name: Docker / Build
 
 on:
   push:
