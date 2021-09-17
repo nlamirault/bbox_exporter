@@ -20,7 +20,7 @@ Prometheus BBOX Exporter
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| additionalLabels | object | `{}` |  |
+| additionalLabels | object | `{}` | Additional labels to add to all resources |
 | affinity | object | `{}` |  |
 | envFromSecret | string | `"bbox-exporter"` | The name of a secret in the same kubernetes namespace which contain values to be added to the environment |
 | exporter.endpoint | string | `"https://mabbox.bytel.fr"` | Bbox URL |
@@ -38,14 +38,14 @@ Prometheus BBOX Exporter
 | ingress.tls | list | `[]` |  |
 | nodeSelector | object | `{}` |  |
 | podAnnotations | object | `{}` |  |
-| rbac.create | bool | `true` |  |
-| replicas | int | `1` |  |
-| resources | object | `{}` |  |
+| rbac.create | bool | `true` | Specifies whether RBAC resources should be created |
+| replicas | int | `1` | Number of instance |
+| resources | object | `{}` | Container resources: requests and limits for CPU, Memory |
 | restartPolicy | string | `"Always"` |  |
 | service.annotations | object | `{}` |  |
 | service.port | int | `9311` |  |
 | service.type | string | `"ClusterIP"` |  |
-| serviceAccount.create | bool | `true` |  |
+| serviceAccount.create | bool | `true` | Specifies whether a ServiceAccount should be created |
 | serviceAccount.name | string | `nil` |  |
 | serviceMonitor.enabled | bool | `false` | Enable this if you're using https://github.com/coreos/prometheus-operator |
 | serviceMonitor.honorLabels | bool | `true` |  |

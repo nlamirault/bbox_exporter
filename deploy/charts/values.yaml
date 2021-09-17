@@ -40,13 +40,13 @@ nodeSelector: {}
 tolerations: []
 affinity: {}
 
-## Additional labels to add to all resources
+# -- Additional labels to add to all resources
 additionalLabels: {}
   # app: bbox-exporter
 
 # config:
 
-## Additional secret mounts
+# -- Additional secret mounts
 # Defines additional mounts with secrets. Secrets must be manually created in the namespace.
 extraSecretMounts: []
   # - name: secret-files
@@ -57,17 +57,18 @@ extraSecretMounts: []
 
 ## For RBAC support:
 rbac:
-  # Specifies whether RBAC resources should be created
+  # -- Specifies whether RBAC resources should be created
   create: true
 
 serviceAccount:
-  # Specifies whether a ServiceAccount should be created
+  # -- Specifies whether a ServiceAccount should be created
   create: true
 
   # The name of the ServiceAccount to use.
   # If not set and create is true, a name is generated using the fullname template
   name:
 
+# -- Container resources: requests and limits for CPU, Memory
 resources: {}
   # limits:
   #   memory: 300Mi
@@ -98,6 +99,7 @@ ingress:
 
 podAnnotations: {}
 
+# -- Number of instance
 replicas: 1
 
 serviceMonitor:
