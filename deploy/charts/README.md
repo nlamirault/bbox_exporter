@@ -1,109 +1,62 @@
-# Prometheus SNMP Exporter
+# prometheus-bbox-exporter
 
-An Prometheus exporter that exposes information gathered from SNMP.
+![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![AppVersion: 0.1.0](https://img.shields.io/badge/AppVersion-0.1.0-informational?style=flat-square)
 
-This chart creates a [SNMP Exporter](https://github.com/prometheus/snmp_exporter) deployment on a [Kubernetes](http://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
+Prometheus BBOX Exporter
 
-## Prerequisites
+**Homepage:** <https://github.com/nlamirault/bbox_exporter>
 
-- Kubernetes 1.8+ with Beta APIs enabled
+## Maintainers
 
-## Get Repo Info
+| Name | Email | Url |
+| ---- | ------ | --- |
+| nlamirault | nicolas.lamirault@gmail.com |  |
 
-```console
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm repo update
-```
+## Source Code
 
-_See [helm repo](https://helm.sh/docs/helm/helm_repo/) for command documentation._
+* <https://github.com/nlamirault/bbox_exporter>
 
-## Install Chart
+## Values
 
-```console
-# Helm 3
-$ helm install [RELEASE_NAME] prometheus-community/prometheus-snmp-exporter
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| additionalLabels | object | `{}` |  |
+| affinity | object | `{}` |  |
+| envFromSecret | string | `"bbox-exporter"` |  |
+| exporter.endpoint | string | `"https://mabbox.bytel.fr"` |  |
+| exporter.log.format | string | `"logfmt"` |  |
+| exporter.log.level | string | `"info"` |  |
+| exporter.web.path | string | `"/metrics"` |  |
+| exporter.web.port | int | `9311` |  |
+| extraSecretMounts | list | `[]` |  |
+| image.pullPolicy | string | `"IfNotPresent"` |  |
+| image.repository | string | `"ghcr.io/nlamirault/bbox_exporter"` |  |
+| image.tag | string | `"v0.1.0"` |  |
+| ingress.annotations | object | `{}` |  |
+| ingress.enabled | bool | `false` |  |
+| ingress.hosts | list | `[]` |  |
+| ingress.tls | list | `[]` |  |
+| nodeSelector | object | `{}` |  |
+| podAnnotations | object | `{}` |  |
+| rbac.create | bool | `true` |  |
+| replicas | int | `1` |  |
+| resources | object | `{}` |  |
+| restartPolicy | string | `"Always"` |  |
+| service.annotations | object | `{}` |  |
+| service.port | int | `9311` |  |
+| service.type | string | `"ClusterIP"` |  |
+| serviceAccount.create | bool | `true` |  |
+| serviceAccount.name | string | `nil` |  |
+| serviceMonitor.enabled | bool | `false` |  |
+| serviceMonitor.honorLabels | bool | `true` |  |
+| serviceMonitor.namespace | string | `"monitoring"` |  |
+| serviceMonitor.params.conf.module[0] | string | `"if_mib"` |  |
+| serviceMonitor.params.conf.target[0] | string | `"127.0.0.1"` |  |
+| serviceMonitor.params.enabled | bool | `false` |  |
+| serviceMonitor.path | string | `"/snmp"` |  |
+| serviceMonitor.scrapeTimeout | string | `"10s"` |  |
+| serviceMonitor.selector.prometheus | string | `"kube-prometheus"` |  |
+| tolerations | list | `[]` |  |
 
-# Helm 2
-$ helm install --name [RELEASE_NAME] prometheus-community/prometheus-snmp-exporter
-```
-
-_See [configuration](#configuration) below._
-
-_See [helm install](https://helm.sh/docs/helm/helm_install/) for command documentation._
-
-## Uninstall Chart
-
-```console
-# Helm 3
-$ helm uninstall [RELEASE_NAME]
-
-# Helm 2
-# helm delete --purge [RELEASE_NAME]
-```
-
-This removes all the Kubernetes components associated with the chart and deletes the release.
-
-_See [helm uninstall](https://helm.sh/docs/helm/helm_uninstall/) for command documentation._
-
-## Upgrading Chart
-
-```console
-# Helm 3 or 2
-$ helm upgrade [RELEASE_NAME] [CHART] --install
-```
-
-_See [helm upgrade](https://helm.sh/docs/helm/helm_upgrade/) for command documentation._
-
-## Configuration
-
-See [Customizing the Chart Before Installing](https://helm.sh/docs/intro/using_helm/#customizing-the-chart-before-installing). To see all configurable options with detailed comments, visit the chart's [values.yaml](./values.yaml), or run these configuration commands:
-
-```console
-# Helm 2
-$ helm inspect values prometheus-community/prometheus-snmp-exporter
-
-# Helm 3
-$ helm show values prometheus-community/prometheus-snmp-exporter
-```
-
-See [prometheus/snmp_exporter/README.md](https://github.com/prometheus/snmp_exporter/) for further information.
-
-### Prometheus Configuration
-
-The snmp exporter needs to be passed the address as a parameter, this can be done with relabelling.
-
-Example config:
-
-```yaml
-scrape_configs:
-  - job_name: 'snmp'
-    static_configs:
-      - targets:
-        - 192.168.1.2  # SNMP device.
-    metrics_path: /snmp
-    params:
-      module: [if_mib]
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: my-service-name:9116  # The SNMP exporter's Service name and port.
-```
-
-Eaxample configuration via a ServiceMonitor
-```yaml
-serviceMonitor:
-  enabled: true
-  relabelings:
-    - sourceLabels: [__param_target]
-      targetLabel: instance
-  params:
-    enabled: true
-    conf:
-      module:
-        - fortigate_snmp
-      target:
-        - 192.168.1.2 # SNMP device
-```
+----------------------------------------------
+Autogenerated from chart metadata using [helm-docs v1.5.0](https://github.com/norwoodj/helm-docs/releases/v1.5.0)
