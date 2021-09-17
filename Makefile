@@ -125,25 +125,8 @@ run: ## Start exporter
 
 docker-build: ## Build Docker image
 	@echo -e "$(OK_COLOR)Docker build $(APP):$(VERSION)$(NO_COLOR)"
-	@docker build -t $(APP):$(VERSION) .
+	@DOCKER_BUILDKIT=1 docker build -t $(APP):$(VERSION) .
 
 docker-run: ## Run the Docker image
 	@echo -e "$(OK_COLOR)Docker run $(APP):$(VERSION)$(NO_COLOR)"
-	@docker run --rm=true \
-		$(APP):$(VERSION) \
-		-log.level debug -bbox https://mabbox.bytel.fr
-
-
-
-# gox: ## Make all binaries
-# 	@echo -e "$(OK_COLOR)[$(APP)] Create binaries $(NO_COLOR)"
-# 	$(GOX) $(GOX_ARGS) github.com/nlamirault/bbox_exporter
-
-# .PHONY: binaries
-# binaries: ## Upload all binaries
-# 	@echo -e "$(OK_COLOR)[$(APP)] Upload binaries to Bintray $(NO_COLOR)"
-# 	for i in $(EXE); do \
-# 		curl -T $$i \
-# 			-u$(BINTRAY_USERNAME):$(BINTRAY_APIKEY) \
-# 			"$(BINTRAY_URI)/content/$(BINTRAY_USERNAME)/$(BINTRAY_REPOSITORY)/$(APP)/${VERSION}/$$i;publish=1"; \
-#         done
+	@docker run --rm=true $(APP):$(VERSION) /bbox_exporter --help
