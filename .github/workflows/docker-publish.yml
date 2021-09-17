@@ -39,7 +39,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Extract metadata (tags, labels) for Docker
+      - name: Docker Metadata
         id: meta
         uses: docker/metadata-action@v3.5.0
         with:
