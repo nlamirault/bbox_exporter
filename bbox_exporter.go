@@ -43,19 +43,19 @@ var (
 	endpoint  = kingpin.Flag(
 		"endpoint",
 		"Endpoint of Bbox.",
-	).Default("https://mabbox.bytel.fr").String()
+	).Default("https://mabbox.bytel.fr").OverrideDefaultFromEnvar("BBOX_EXPORTER_ENDPOINT").String()
 	password = kingpin.Flag(
 		"password",
 		"The admin password.",
-	).String()
+	).OverrideDefaultFromEnvar("BBOX_EXPORTER_PASSWORD").String()
 	listenAddress = kingpin.Flag(
 		"web.listen-address",
 		"Address to listen on for web interface and telemetry.",
-	).Default(":9311").String()
+	).OverrideDefaultFromEnvar("BBOX_EXPORTER_ADDR").Default(":9311").String()
 	metricPath = kingpin.Flag(
 		"web.telemetry-path",
 		"Path under which to expose metrics.",
-	).Default("/metrics").String()
+	).OverrideDefaultFromEnvar("BBOX_EXPORTER_METRICS_PATH").Default("/metrics").String()
 )
 
 func main() {
