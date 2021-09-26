@@ -22,7 +22,7 @@ on:
       - master
       - main
   pull_request:
-  
+
 jobs:
   golangci:
     name: lint
