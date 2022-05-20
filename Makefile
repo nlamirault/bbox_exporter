@@ -130,10 +130,10 @@ validate: ## Execute git-hooks
 
 ##@ Docker
 
-docker-build: ## Build Docker image
+docker-build: guard-VERSION ## Build Docker image
 	@echo -e "$(OK_COLOR)Docker build $(APP):$(VERSION)$(NO_COLOR)"
 	@DOCKER_BUILDKIT=1 docker build -t $(APP):$(VERSION) .
 
-docker-run: ## Run the Docker image
+docker-run: guard-VERSION ## Run the Docker image
 	@echo -e "$(OK_COLOR)Docker run $(APP):$(VERSION)$(NO_COLOR)"
 	@docker run --rm=true $(APP):$(VERSION) /bbox_exporter --help
