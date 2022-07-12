@@ -34,10 +34,6 @@ import (
 	"github.com/nlamirault/bbox_exporter/exporter"
 )
 
-const (
-	banner = "bbox_exporter - %s\n"
-)
-
 var (
 	webConfig = webflag.AddFlags(kingpin.CommandLine)
 	endpoint  = kingpin.Flag(
