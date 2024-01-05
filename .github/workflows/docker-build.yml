@@ -37,7 +37,7 @@ jobs:
 
       - name: Docker Metadata
         id: docker-metadata
-        uses: docker/metadata-action@v5.0.0
+        uses: docker/metadata-action@v5.5.0
         with:
           images: |
             ghcr.io/${{ github.repository }}
