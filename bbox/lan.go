@@ -44,7 +44,7 @@ type LanHost struct {
 	Ethernet   struct {
 		Physicalport int    `json:"physicalport"`
 		Logicalport  int    `json:"logicalport"`
-		Speed        string `json:"speed"`
+		Speed        int    `json:"speed"`
 		Mode         string `json:"mode"`
 	} `json:"ethernet"`
 	Stb struct {
@@ -52,7 +52,7 @@ type LanHost struct {
 		Serial  string `json:"serial"`
 	} `json:"stb,omitempty"`
 	Wireless struct {
-		Band       string      `json:"band"`
+		Band       interface{} `json:"band"`
 		Rssi0      interface{} `json:"rssi0"` // String or int ? "rssi0":"-76","rssi1":0,"rssi2":0
 		Rssi1      interface{} `json:"rssi1"`
 		Rssi2      interface{} `json:"rssi2"`
